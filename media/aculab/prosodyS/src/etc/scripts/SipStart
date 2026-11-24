@@ -1,0 +1,54 @@
+# @(#) $Id: SipStart,v 1.1.4.1 2016/04/12 21:59:21 shijuc Exp $
+#----------------------------------------------------------------------
+# NAME
+#       SipStart
+#
+# COPYRIGHT
+# Tayana Software Solutions Ltd -- Copyright(C) 2015
+# All rights reserved. No part of this computer program
+# may be used or reproduced in any form by any
+# means without prior written permission of
+# Tayana Software Solutions Ltd
+#
+# DESCRIPTION :
+#
+# AUTHOR         : Sip                                  23-Feb-2015
+#
+# 1.MODIFIED BY  : <Name>                                <Date>
+#   MODIFICATION : <Details>
+#----------------------------------------------------------------------
+
+#***********************************************************************
+#Set the environment
+. /opt/sip/etc/scripts/sip.env
+. $PRODUCT_HOME/etc/scripts/oam.env
+
+. /opt/sip/etc/scripts/sip.env
+#***********************************************************************
+# Source function library.
+. /opt/sip/etc/scripts/functions
+
+#. $PRODUCT_HOME/etc/scripts/trace_enable
+
+#***********************************************************************
+echo " "
+echo "---------------------------------------------------------------"
+$SETCOLOR_SUCCESS
+echo "--------------------- SIP KERNEL STARTUP ---------------------"
+$SETCOLOR_NORMAL
+echo "---------------------------------------------------------------"
+echo  
+
+#***********************************************************************
+echo  
+echo "---------------------------------------------------------------"
+echo "Setting core file limit to 5000"
+echo " "
+
+#****************** Launch SIP EvrWriter Process **********************
+echo " "
+echo "---------------------------------------------------------------"
+echo "Starting SIP EvrWriter"
+echo " "
+$PRODUCT_HOME/$PRODUCT_BIN_DIR/ACU_SipHandler 1&
+sleep $PROCESS_INIT_DELAY

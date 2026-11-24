@@ -1,0 +1,376 @@
+static const char* id="@(#) $Id: IvrHttpClient.cc,v 1.1.6.2 2025/01/10 12:27:07 mram Exp $" ;
+//---------------------------------------------------------------------------------
+// NAME        : IvrHttpClient.cc
+//
+// COPYRIGHT   : TSS -- Copyright (C) 2009 Tayana Software Solutions Pvt Ltd.,
+//               All rights reserved. No part of this computer program
+//               may be used or reproduced in any form by any
+//               means without prior written permission of
+//               Tayana Software Solutions Pvt Ltd.
+//
+// Originated  : Kothari Komal                               Dated: 12-May-2019
+//---------------------------------------------------------------------------------
+
+#include "HttpVxmlClient.hpp"
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+//#include "Log.h"
+#include "LogApi.h"
+#include "ctrace.h"
+#include "MsgQueue.h"
+#include "ProcessLock.h"
+#include "CfgRead.h"
+#include "IvrStructs.h"
+#include "IvrLimits.h"
+#include "IvrConstDef.h"
+#include "IvrUtil.h"
+
+#define HTTP_HOST_IP_MISSING        111
+#define HTTP_HOST_PORT_MISSING      112
+#define HTTP_URI_MISSING            113
+#define HTTP_CALL_REFERENCE_MISSING 114
+#define HTTP_QUERY_MISSING          115
+#define HTTP_HOST_METHOD_NOT_SET    116
+#define HTTP_CONNECT_ERROR          117
+#define HTTP_INVALID_RESPONSE       118
+#define HTTP_RESPONSE_NOT_OK        119
+#define HTTP_EXCEPTION              120
+#define HTTP_UNKNOWN                121
+
+Log                 gLog;
+CTrace              gTrace("TRACE_HTTP");
+TEXT                gProcessName[MAX_PROCESS_NAME] = " ";
+TEXT                gLogText[MAX_LOG_TEXT_LEN + 1] = "";
+TEXT                gCallReference[20] = "";
+#if DEBUG 
+bool                gIsDebugEnabled = false;
+#endif
+int getErrorCode(int status)
+{
+   switch (status)
+   {
+      case 1: return HTTP_HOST_METHOD_NOT_SET;
+      case 2: return HTTP_CONNECT_ERROR;
+      case 3: return HTTP_INVALID_RESPONSE;
+      case 4: return HTTP_RESPONSE_NOT_OK;
+      case 5: return HTTP_EXCEPTION;
+      default: return HTTP_UNKNOWN;
+   }
+}
+
+/** Convert a two-char hex string into the char it represents. **/
+char x2c(char *what) {
+   register char digit;
+
+   digit = (what[0] >= 'A' ? ((what[0] & 0xdf) - 'A')+10 : (what[0] - '0'));
+   digit *= 16;
+   digit += (what[1] >= 'A' ? ((what[1] & 0xdf) - 'A')+10 : (what[1] - '0'));
+   return(digit);
+}
+
+/** Reduce any %xx escape sequences to the characters they represent. **/
+void unescape_url(char *url) {
+	register int i,j;
+
+	for(i=0,j=0; url[j]; ++i,++j) {
+		if((url[i] = url[j]) == '%') {
+			url[i] = x2c(&url[j+1]) ;
+			j+= 2 ;
+		}
+	}
+	url[i] = '\0' ;
+}
+
+char **getcgivars() 
+{
+	register int i ;
+	char *request_method ;
+	int content_length;
+	char *cgiinput ;
+	char **cgivars ;
+	char **pairlist ;
+	int paircount ;
+	char *nvpair ;
+	char *eqpos ;
+
+	// Depending on the request method, read all CGI input into cgiinput. 
+	request_method= getenv("REQUEST_METHOD") ;
+
+	if (!strcmp(request_method, "GET") || !strcmp(request_method, "HEAD") ) {
+		// Some servers apparently don't provide QUERY_STRING if it's empty, //
+		//   so avoid strdup()'ing a NULL pointer here.                      //
+		char *qs ;
+		qs= getenv("QUERY_STRING") ;
+		cgiinput= strdup(qs  ? qs  : "") ;
+	}
+	else if (!strcmp(request_method, "POST")) {
+		// strcasecmp() is not supported in Windows-- use strcmpi() instead 
+		if ( strcasecmp(getenv("CONTENT_TYPE"), "application/x-www-form-urlencoded")) {
+			TERR(gTrace, printf("Content-Type: text/plain\n\n"););
+			TERR(gTrace, printf("getcgivars(): Unsupported Content-Type.\n");) ;
+			exit(1) ;
+		}
+		if ( !(content_length = atoi(getenv("CONTENT_LENGTH"))) ) {
+			TERR(gTrace, printf("Content-Type: text/plain\n\n");) ;
+			TERR(gTrace, printf("getcgivars(): No Content-Length was sent with the POST request.\n");) ;
+			exit(1) ;
+		}
+		if ( !(cgiinput= (char *) malloc(content_length+1)) ) {
+			TERR(gTrace, printf("Content-Type: text/plain\n\n"););
+			TERR(gTrace, printf("getcgivars(): Couldn't malloc for cgiinput.\n");) ;
+			exit(1) ;
+		}
+		if (!fread(cgiinput, content_length, 1, stdin)) {
+			TERR(gTrace, printf("Content-Type: text/plain\n\n");) ;
+			TERR(gTrace, printf("getcgivars(): Couldn't read CGI input from STDIN.\n");) ;
+			exit(1) ;
+		}
+		cgiinput[content_length]='\0' ;
+	}
+	else {
+		printf("Content-Type: text/plain\n\n") ;
+		printf("getcgivars(): Unsupported REQUEST_METHOD.\n") ;
+		exit(1) ;
+	}
+
+	// Change all plusses back to spaces. //
+	for (i=0; cgiinput[i]; i++) if (cgiinput[i] == '+') cgiinput[i] = ' ' ;
+
+	// First, split on "&" and ";" to extract the name-value pairs into //
+	//   pairlist.                                                      //
+	pairlist= (char **) malloc(256*sizeof(char **)) ;
+	paircount= 0 ;
+	nvpair= strtok(cgiinput, "&;") ;
+	while (nvpair) {
+		pairlist[paircount++]= strdup(nvpair) ;
+		if (!(paircount%256))
+			pairlist= (char **) realloc(pairlist,(paircount+256)*sizeof(char **)) ;
+		nvpair= strtok(NULL, "&;") ;
+	}
+	pairlist[paircount]= 0 ;    // terminate the list with NULL //
+
+	// Then, from the list of pairs, extract the names and values. //
+	cgivars= (char **) malloc((paircount*2+1)*sizeof(char **));
+	for (i= 0; i<paircount; i++) 
+	{
+		if ((eqpos=strchr(pairlist[i], '=')) )
+		{
+			*eqpos= '\0' ;
+			unescape_url(cgivars[i*2+1]= strdup(eqpos+1)) ;
+		} else {
+			unescape_url(cgivars[i*2+1]= strdup("")) ;
+		}
+		unescape_url(cgivars[i*2]= strdup(pairlist[i])) ;
+	}
+	cgivars[paircount*2]= 0 ;   // terminate the list with NULL /
+
+	// Free anything that needs to be freed. //
+	free(cgiinput) ;
+	for (i=0; pairlist[i]; i++) free(pairlist[i]) ;
+	free(pairlist) ;
+
+	// Return the list of name-value strings. //
+   //
+#if DEBUG 
+	char * lpIsDebugEnabled = getenv("CGI_DEBUG") ;
+   if(lpIsDebugEnabled != NULL)
+   {
+      gIsDebugEnabled = (atoi((const char*)*lpIsDebugEnabled) == 1);
+   }
+   else
+   {
+      gIsDebugEnabled = false;
+   }
+#endif
+	return cgivars ;
+
+}
+
+void PrintError(int lErrorCode, TEXT* ErrMsg, TEXT* lAppName)
+{
+   TEXT  lLogText[MAX_LOG_TEXT_LEN+1] = "";
+   //IvrUtil::ReplaceAll(ErrMsg, "'", "\\'");
+   //printf(" ");
+   printf("<?xml version=\"1.0\"?>\n");
+   printf("<vxml version=\"2.0\" application=\"%s\" xmlns=\"http://www.w3.org/2001/vxml\">\n", lAppName);
+   printf("<form>\n");
+   printf("<block>\n");
+   printf("<var name=\"Result\" expr=\"%d\"/>\n", lErrorCode);
+   if(strlen(ErrMsg) > 0 || ErrMsg != NULL)
+   {
+      printf("<var name=\"ErrMsg\" expr=\"'%s'\"/>\n", ErrMsg);
+      printf("<return namelist=\"Result ErrMsg\"/>\n");
+   }
+   else
+		printf("<return namelist=\"Result\"/>\n");
+	printf("</block>");
+	printf("</form>\n");
+	printf("</vxml>\n");
+   
+   snprintf(lLogText, MAX_LOG_TEXT_LEN, "RefNum:%s %s", gCallReference, ErrMsg);
+   gLog.GenerateLog(CGI_DBP01, lLogText);
+	exit(0);
+}
+
+void PrintError(int lErrorCode, TEXT* ErrMsg, TEXT* lAppName, TEXT lVars[][MAX_VARIABLE_LEN], int& varCnt, int& lRowsFetched)
+{
+   //IvrUtil::ReplaceAll(ErrMsg, "'", "\\'");
+   TEXT*   lToken;
+   TEXT    lDtype[10] = "";
+   TEXT    fieldName[20] = "";
+   TEXT    lReturn_vars[MAX_NO_OF_VARIABLES][MAX_VARIABLE_LEN];
+   TEXT    lLogText[MAX_LOG_TEXT_LEN+1] = "";
+
+   for(int i=0;  i<varCnt ; i++)
+   {
+      lToken = strtok(lVars[i],":");
+      strcpy(fieldName, lToken);
+      strncpy(lDtype, lToken+strlen(lToken)+1, 1);
+      strcat(lReturn_vars[varCnt], " ");
+      strcat(lReturn_vars[varCnt], fieldName);
+      if(lRowsFetched == 1)
+         sprintf(lReturn_vars[i], "<var name=\"%s\" expr=\"''\"/>", fieldName);
+      else
+         sprintf(lReturn_vars[i], "<var name=\"%s\" expr=\"new Array()\"/>", fieldName);
+      //printf("%s\n", lReturn_vars[i]);
+   }
+   memcpy(lVars, lReturn_vars, sizeof(lReturn_vars));
+
+   //printf(" ");
+   printf("<?xml version=\"1.0\"?>\n");
+   printf("<vxml version=\"2.0\" application=\"%s\" xmlns=\"http://www.w3.org/2001/vxml\">\n", lAppName);
+   printf("<form>\n");
+   printf("<block>\n");
+   printf("<var name=\"Result\" expr=\"%d\"/>\n", lErrorCode);
+   printf("<var name=\"RCount\" expr=\"0\"/>\n");
+   for(int j=0; j<varCnt; j++)
+      printf("%s\n", lReturn_vars[j]);
+
+   printf("<var name=\"ErrMsg\" expr=\"'%s'\"/>\n", ErrMsg);
+   printf("<return namelist=\"Result ErrMsg RCount%s\"/>\n",lReturn_vars[varCnt]);
+   printf("</block>");
+   printf("</form>\n");
+   printf("</vxml>\n");
+
+   snprintf(lLogText, MAX_LOG_TEXT_LEN, "RefNum:%s %s", gCallReference, ErrMsg);
+   gLog.GenerateLog(CGI_DBP01, lLogText);
+   exit(0);
+}
+//-------------------------------------------------------------
+// METHOD         : main
+// DESCRIPTION    :
+// PARAMETER      :
+// RETURN         : BOOLEAN
+//-------------------------------------------------------------
+int main(int argc,char* argv[])
+{
+   char            **cgivars ;
+	TEXT            lAppName[MAX_VARIABLE_LEN + 1]     = "";
+	TEXT            lHost[MAX_VARIABLE_LEN + 1]      = "";
+	TEXT            lUri[MAX_VARIABLE_LEN + 1]  = "";
+   TEXT            lMethod[MAX_VARIABLE_LEN + 1]     = "";
+	TEXT            lQuery[MAX_QUERY_LEN + 1]  = "";
+	TEXT            lRequestCfgFile[MAX_QUERY_LEN + 1]  = "";
+	TEXT            lResponseCfgFile[MAX_QUERY_LEN + 1]  = "";
+   int             lPort = 0;
+
+	strcpy( gProcessName, basename(argv[0]));
+   memset (gCallReference, 0, sizeof(gCallReference));
+	/** Print the CGI response header, required for all HTML output. **/
+	/** Note the extra \n, to send the blank line.                  **/
+   printf("Content-type: text/xml\r\n\r\n") ;
+
+	if(gLog.Init()== false)
+	{
+		//printf("%s\n",HTTP_LOGINIT_FAILED);
+		snprintf(gLogText, MAX_LOG_TEXT_LEN ,
+				"Failed to Initialize log object. Exiting..\n");
+		gLog.GenerateLog(GSYS04, gLogText);
+		PrintError(99,(TEXT*) "Failed to Initialize log object. Exiting..", lAppName);
+		return 0;
+	}
+	gLog.SetProcessName(gProcessName);
+
+	cgivars = getcgivars();
+#ifdef DB_TEXT_DELAY
+   //TBR - Added for Testing
+   char* slp;
+   int  slptime = 0;
+   slp = getenv("DELAY_TIME") ;
+   if(slp != NULL)
+      slptime = atoi(slp);
+#endif
+
+	for(int i=0; cgivars[i]; i+=2)
+	{
+		if(strcasecmp(cgivars[i], "AppName") == 0)
+			strcpy(lAppName, cgivars[i+1]);
+		if(strcasecmp(cgivars[i], "Host") == 0)
+			strcpy(lHost, cgivars[i+1]);
+		if(strcasecmp(cgivars[i], "Port") == 0)
+			lPort = std::atoi(cgivars[i+1]);
+		if(strcasecmp(cgivars[i], "Uri") == 0)
+			strcpy(lUri, cgivars[i+1]);
+		if(strcasecmp(cgivars[i], "Method") == 0)
+			strcpy(lMethod, cgivars[i+1]);
+		if(strcasecmp(cgivars[i], "Query") == 0)
+			strcpy(lQuery, cgivars[i+1]);
+		if(strcasecmp(cgivars[i], "RequestCfg") == 0)
+			strcpy(lRequestCfgFile, cgivars[i+1]);
+		if(strcasecmp(cgivars[i], "ResponseCfg") == 0)
+			strcpy(lResponseCfgFile, cgivars[i+1]);
+		if(strcasecmp(cgivars[i], "CallRef") == 0)
+			strcpy(gCallReference, cgivars[i+1]);
+#if DEBUG
+		if(strcasecmp(cgivars[i], "CGI_DEBUG") == 0)
+			gIsDebugEnabled = (std::atoi(cgivars[i+1]) == 1);
+#endif
+	}
+
+	/*if(lAppName == '\0'||strlen(lAppName) == 0)
+		PrintError(HTTP_APPLICATION_NAME_MISSING, "Application Name Missing", lAppName);*/
+	if(gCallReference == NULL || strlen(gCallReference) == 0)
+		PrintError(HTTP_CALL_REFERENCE_MISSING, (TEXT*)"Call Reference Number Missing", lAppName);
+	if(lQuery == NULL || strlen(lQuery) == 0)
+		PrintError(HTTP_QUERY_MISSING,(TEXT*) "Query Missing", lAppName);
+  
+   std::string lStrHost(lHost);
+   std::string lStrUri(lUri);
+   std::string lStrQuery(lQuery);
+   std::string lStrRequestCfgFile(lRequestCfgFile);
+   std::string lStrResponseCfgFile(lResponseCfgFile);
+    
+   int status = -1;
+
+#if DEBUG 
+   if(gIsDebugEnabled)
+   {
+   std::cout<<"Invoking HttpVxmlClient::ProcessHttpQuery Host:"<<lStrHost<<" Port:"<<lPort <<" URL"<<lStrUri <<"Query :"<<lStrQuery <<" Status: "<< status <<" RequestCfg:"<< lStrRequestCfgFile<<" ResponseCfg:"<< lStrResponseCfgFile <<"\n";
+   }
+#endif
+   
+   std::string lResponse=HttpVxmlClient::ProcessHttpQuery(lStrHost, lPort, lStrUri, lStrQuery, status, lStrRequestCfgFile, lStrResponseCfgFile);
+
+#if DEBUG 
+   if(gIsDebugEnabled)
+   {
+   std::cout<<"Response Received Status: "<<status<<" Content: "<<lResponse.c_str()<<"\n";
+   }
+#endif
+   if(status != 0)
+   {
+      //PrintError(getErrorCode(status),(TEXT*) "Error fetching URL", lAppName);
+      PrintError(getErrorCode(status),(TEXT*) lResponse.c_str(), lAppName);
+   }
+   else
+      printf("%s\n", lResponse.c_str());
+   snprintf(gLogText, MAX_LOG_TEXT_LEN ,"RefNum:%s Result: %d",gCallReference, status);
+   gLog.GenerateLog(CGI_DBP02, gLogText);
+	/** Free anything that needs to be freed **/
+	for (int i=0; cgivars[i]; i++) free(cgivars[i]) ;
+	free(cgivars) ;
+
+	return 0;
+}
+

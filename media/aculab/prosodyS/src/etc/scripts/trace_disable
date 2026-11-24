@@ -1,0 +1,23 @@
+# @(#) $Id: trace_disable,v 1.1.4.1 2016/04/12 21:59:21 shijuc Exp $
+#----------------------------------------------------------------------
+# NAME
+#       trace_disable
+#
+# COPYRIGHT
+# Tayana Software Solutions Ltd -- Copyright(C) 2015
+# All rights reserved. No part of this computer program
+# may be used or reproduced in any form by any
+# means without prior written permission of
+# Tayana Software Solutions Ltd
+#
+# DESCRIPTION :
+#
+# AUTHOR         : Sip                                  23-Feb-2015
+#
+# 1.MODIFIED BY  : <Name>                                <Date>
+#   MODIFICATION : <Details>
+#----------------------------------------------------------------------
+
+
+#****************** SIP Kernel Traces *******************************
+unset TRACE_SIP_HDLR   #SIP Evr Writer

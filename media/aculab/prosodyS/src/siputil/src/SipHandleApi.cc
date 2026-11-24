@@ -1,0 +1,318 @@
+static const char* id="@(#) $Id: SipHandleApi.cc,v 1.1.4.1.2.1 2016/05/12 01:16:19 mram Exp $" ;
+//----------------------------------------------------------------------
+// NAME
+// SipHandleApi.cc
+//
+// COPYRIGHT
+// Tayana Software Solutions Pvt Ltd -- Copyright(C) 2007
+// All rights reserved. No part of this computer program
+// may be used or reproduced in any form by any
+// means without prior written permission of
+// Tayana Software Solutions Pvt Ltd
+//
+// DESCRIPTION
+//       This class is used for storing outgoing request and retrieving
+// incoming response.
+//----------------------------------------------------------------------
+#include "SipHandleApi.h"
+
+//----------------------------------------------------------------------
+// METHOD NAME : SipHandleApi
+// DESCRIPTION : constructor
+// PARAMETERS  : None
+// RETURN      : None
+//----------------------------------------------------------------------
+SipHandleApi::SipHandleApi ()
+{
+
+}
+
+//----------------------------------------------------------------------
+// METHOD NAME : ~SipHandleApi
+// DESCRIPTION : Destructor
+// PARAMETERS  : None
+// RETURN      : None
+//----------------------------------------------------------------------
+SipHandleApi::~SipHandleApi ()
+{
+   if (mpHashTablePtr)
+      delete[] mpHashTablePtr;
+
+   mpHashTablePtr = NULL;
+}
+
+//----------------------------------------------------------------------
+// METHOD      : Init
+// DESCRIPTION : Initializes all the private variables and
+//               objects used by the SipHandleApi process
+// PARAMETER   : None
+// RETURN      : BOOLEAN
+//----------------------------------------------------------------------
+BOOLEAN SipHandleApi::Init ()
+{
+   TEXT lLogText[TSS_MAX_LOG_TEXT_LEN + 1] = "";
+
+   if (false == this->ReadConfig ())
+   {
+      return false;
+   }
+
+   if (false == this->InitHashTable ())
+   {
+      sprintf (lLogText, "Failed to Initailize the ReqHashTable");
+      TERR (gTrace, printf ("%s: %s. Exiting...\n", gProcessName, 
+               lLogText););
+      gLog.GenerateLog (GSYS04, lLogText);
+      return false;
+   }
+
+   if (false == this->ClearReqMapHashTable ())
+      return false;
+
+   return true;
+}
+
+//----------------------------------------------------------------------
+// METHOD NAME : InitHashTable ()
+// DESCRIPTION : Initializes the Parameter Hash Table 
+// PARAMETERS  : None
+// RETURN      : BOOLEAN
+//----------------------------------------------------------------------
+BOOLEAN SipHandleApi::InitHashTable ()
+{
+   UINT32 lHashTableSize = 0;
+
+   mReqMapDir.SetBucketCount (SIP_MAX_HASH_TABLE_ENTRY + 1);
+
+   lHashTableSize = mReqMapDir.GetHashTableSize ();
+
+   mpHashTablePtr = new TEXT [lHashTableSize];
+   return true;
+}
+
+//----------------------------------------------------------------------
+// METHOD NAME : ClearReqMapHashTable 
+// DESCRIPTION :
+// PARAMETERS  : None
+// RETURN      : BOOLEAN
+//----------------------------------------------------------------------
+BOOLEAN SipHandleApi::ClearReqMapHashTable ()
+{
+   //TEXT lLogText[TSS_MAX_LOG_TEXT_LEN + 1] = "";
+
+   if (mReqMapDir.SetHashMemoryPtr ((void *) mpHashTablePtr,
+            true) != SHT_SUCCESS)
+   {
+      TERR (gTrace, printf ("%s: Failed to set hash table memory pointer\n",
+               gProcessName););
+      //gLog.GenerateLog (API_DIAMETER41);
+      return false;
+   }
+
+   mReqMapDir.SetSemaphoreId(mSipHandleSemKey);
+
+   return true;
+}
+
+//----------------------------------------------------------------------
+// METHOD NAME : ReadConfig 
+// DESCRIPTION :
+// PARAMETERS  : None
+// RETURN      : BOOLEAN
+//----------------------------------------------------------------------
+BOOLEAN SipHandleApi::ReadConfig ()
+{
+   CfgRead      		lCfgRead(gProcessName);
+   TEXT              lLogText[TSS_MAX_LOG_TEXT_LEN + 1] = "";
+
+   if (false == lCfgRead.CfgInit(SIP_IPC_CFG) )
+   {
+      snprintf(lLogText, TSS_MAX_LOG_TEXT_LEN, "Could not open file %s", 
+            SIP_IPC_CFG);
+      TERR(gTrace, printf("%s: Could not open file %s\n",
+               gProcessName, SIP_IPC_CFG););
+      gLog.GenerateLog(GSYS10, lLogText);
+      return false;
+   }
+
+   if (CFG_OK != lCfgRead.GetConfigNum ("SIP_HANDLE_SEM_KEY",
+            mSipHandleSemKey,
+            TSS_MIN_IPC, TSS_MAX_IPC))
+   {
+      snprintf (lLogText, TSS_MAX_LOG_TEXT_LEN, 
+            "SIP_HANDLE_SEM_KEY . File:%s", SIP_IPC_CFG);
+      TERR (gTrace, printf ("%s: Config read failed for %s \n",
+               gProcessName, lLogText););
+      lCfgRead.CfgDeInit ();
+      return false;
+   }
+   else
+   {
+      T (gTrace, printf ("%s: SIP_HANDLE_SEM_KEY = %d\n",
+               gProcessName, mSipHandleSemKey););
+   }
+
+   lCfgRead.CfgDeInit ();
+
+   return true;
+}
+
+//----------------------------------------------------------------------
+// METHOD NAME : ReloadConfig
+// DESCRIPTION :
+// PARAMETERS  : None
+// RETURN      : BOOLEAN
+//----------------------------------------------------------------------
+BOOLEAN SipHandleApi::ReloadConfig ()
+{
+   return this->ReadConfig ();
+}
+
+//----------------------------------------------------------------------
+// METHOD NAME : InsertReqquestIntoHash
+// DESCRIPTION :
+// PARAMETERS  : None
+// RETURN      : BOOLEAN
+//----------------------------------------------------------------------
+BOOLEAN SipHandleApi::InsertRequestIntoHash (SipCallHandlers & lSipCallHandlers)
+{
+   TEXT lLogText[TSS_MAX_LOG_TEXT_LEN + 1] = "";
+
+   //if (false == this->ClearReqMapHashTable ())
+   // return false;
+
+   snprintf (lLogText, 
+         TSS_MAX_LOG_TEXT_LEN, 
+         "CID:%06d Handle:%lu VmpRx:%lu VmpTx:%lu Channel:%lu Key:%s Idx:%d",
+         lSipCallHandlers.index, lSipCallHandlers.handle, lSipCallHandlers.vmp_rx, 
+         lSipCallHandlers.vmp_tx, 
+         lSipCallHandlers.channel, lSipCallHandlers.key, lSipCallHandlers.index);
+
+   if (SHT_SUCCESS !=
+         mReqMapDir.Insert (lSipCallHandlers.key,
+            lSipCallHandlers))
+   {
+      //gLog.GenerateLog (DIA_REQMAP01, lLogText);
+      TERR (gTrace, printf ("%s: %s ReqKey Table insertion Failed ,key:%s\n",
+               gProcessName, lLogText, lSipCallHandlers.key););
+      return false;
+   }
+
+   //gLog.GenerateLog (DIA_REQMAP02, lLogText);
+   T (gTrace, printf ("%s: %s Insert into ReqKey Table success %s\n",
+            gProcessName, lLogText, lSipCallHandlers.key););
+
+   return true;
+}
+//----------------------------------------------------------------------
+// METHOD NAME : GetReqMapDetails 
+// DESCRIPTION :
+// PARAMETERS  : None
+// RETURN      : BOOLEAN
+//----------------------------------------------------------------------
+BOOLEAN SipHandleApi::GetReqMapDetails (TEXT * handle,
+      SipCallHandlers & lSipCallHandlers)
+{
+   TEXT           lLogText[TSS_MAX_LOG_TEXT_LEN + 1] = "";
+   TEXT           lTempString[SIP_MAX_REQ_KEY_LEN + 1] = "";
+   HashTableError lHashTableError;
+
+   strcpy (lTempString, handle);
+
+
+   lHashTableError = (HashTableError)mReqMapDir.Get (
+         lTempString, lSipCallHandlers);
+
+   if (lHashTableError != SHT_SUCCESS)   
+   {
+      snprintf (lLogText, TSS_MAX_LOG_TEXT_LEN, 
+            "Failed to get Key details Key:%s Err:%d", 
+            lTempString, lHashTableError);
+      T (gTrace, printf ("%s: %s\n", gProcessName, lLogText););
+      //gLog.GenerateLog (DIA_REQMAP04, lLogText);
+      return false;
+   }    
+   
+   snprintf (lLogText, 
+         TSS_MAX_LOG_TEXT_LEN, 
+         "CID:%06d Handle:%lu VmpRx:%lu VmpTx:%d Channel:%lu Key:%s Idx:%d",
+         lSipCallHandlers.index, lSipCallHandlers.handle, lSipCallHandlers.vmp_rx, 
+         lSipCallHandlers.vmp_tx, 
+         lSipCallHandlers.channel, handle, lSipCallHandlers.index);
+
+   T (gTrace,
+         printf ("%s: %s Key details found \n",
+            gProcessName, lLogText););
+   //gLog.GenerateLog (DIA_REQMAP03, lLogText);
+
+   return true;
+}
+
+//----------------------------------------------------------------------
+// METHOD NAME : DeleteRequestFromHash 
+// DESCRIPTION :
+// PARAMETERS  : None
+// RETURN      : BOOLEAN
+//----------------------------------------------------------------------
+BOOLEAN SipHandleApi::DeleteRequestFromHash (TEXT * handle)
+{
+   TEXT           lLogText[TSS_MAX_LOG_TEXT_LEN + 1] = "";
+   TEXT           lTempString[SIP_MAX_REQ_KEY_LEN + 1] = "";
+   HashTableError lHashTableError;
+
+   strcpy (lTempString, handle);
+
+
+   lHashTableError = (HashTableError)mReqMapDir.Delete (lTempString);
+
+   if (lHashTableError != SHT_SUCCESS)   
+   {
+      snprintf (lLogText, TSS_MAX_LOG_TEXT_LEN, 
+            "Failed to Delete Key details Key:%s Err:%d", 
+            lTempString, lHashTableError);
+      T (gTrace, printf ("%s: %s\n", gProcessName, lLogText););
+      //gLog.GenerateLog (DIA_REQMAP05, lLogText);
+      return false;
+   }     
+
+   snprintf (lLogText, TSS_MAX_LOG_TEXT_LEN, 
+         "Deleted from Hash Table Key: %s", handle);
+
+   T (gTrace,
+         printf ("%s: %s\n",
+            gProcessName, lLogText););
+   //gLog.GenerateLog (DIA_REQMAP06, lLogText);
+
+   return true;
+}
+//----------------------------------------------------------------------
+// METHOD NAME : GetAllRequest 
+// DESCRIPTION :
+// PARAMETERS  : None
+// RETURN      : BOOLEAN
+//----------------------------------------------------------------------
+BOOLEAN SipHandleApi::GetAllRequest (
+      TEXT (*key)[SIP_MAX_REQ_KEY_LEN + 1], 
+      SipCallHandlers* lSipCallHandlers, UINT32 &lcount )
+{
+   TEXT lLogText[TSS_MAX_LOG_TEXT_LEN + 1] = "";
+   HashTableError lHashTableError;
+
+   lHashTableError = 
+      (HashTableError)mReqMapDir.GetAll(key, &lSipCallHandlers[0], lcount);
+
+   if (lHashTableError != SHT_SUCCESS)   
+   {
+      snprintf (lLogText, TSS_MAX_LOG_TEXT_LEN, 
+            "Get All Failed Err:%d", lHashTableError);
+      T (gTrace, printf ("%s: %s\n", gProcessName, lLogText););
+      //gLog.GenerateLog (DIA_REQMAP07, lLogText);
+      return false;
+   }
+
+   /*  T (gTrace,
+       printf ("%s: %s Get All Key Details Success\n",
+       gProcessName, lLogText););
+    */
+   return true;
+}

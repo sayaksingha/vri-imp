@@ -1,0 +1,6 @@
+obj/TimerStub.o : src/TimerStub.cc \
+ /home/joel/cvs/util/src/timer/include/Timer.h \
+ /home/joel/cvs/util/src/include/Types.h \
+ /home/joel/cvs/util/src/datastructures/include/DoublyLinkedList.h \
+ /home/joel/cvs/util/src/trace/include/ctrace.h \
+ /home/joel/cvs/util/src/datastructures/include/DoublyLinkedList.tcc
