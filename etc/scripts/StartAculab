@@ -1,0 +1,70 @@
+#  @(#) $Id: StartAculab,v 1.1.4.3 2016/04/12 21:59:14 shijuc Exp $
+#!/bin/sh
+
+#*****************************************************************************
+#Set the environment
+. /opt/ivr/etc/scripts/ivr.env
+. $PRODUCT_HOME/etc/scripts/oam.env
+
+#*****************************************************************************
+# Source function library.
+. $PRODUCT_HOME/etc/scripts/functions
+
+#*****************************************************************************
+echo " "
+echo "------------------------------------------------------------------------"
+$SETCOLOR_SUCCESS
+echo "------------------------- IVR MEDIA STARTUP ----------------------------"
+$SETCOLOR_NORMAL
+echo "------------------------------------------------------------------------"
+echo " "
+
+#*****************************************************************************
+echo " "
+echo "------------------------------------------------------------------------"
+echo "Setting core file limit to 5000"
+echo " "
+ulimit -c 5000
+
+#**************** Launch IVR Aculab Voice Process ***************************
+#echo " "
+#echo "------------------------------------------------------------------------"
+#echo "Starting IVR Aculab Voice Process"
+#echo " "
+#$PRODUCT_HOME/$PRODUCT_BIN_DIR/ACU_MediaProcess <CardId> &
+#sleep $PROCESS_INIT_DELAY
+
+#**************** Launch IVR Acualb Voice Process ***************************
+cd /opt/aculab
+source setV6.sh
+cd -
+echo " "
+echo "------------------------------------------------------------------------"
+echo "Starting IVR Aculab Voice Process - CardId 1"
+echo " "
+$PRODUCT_HOME/$PRODUCT_BIN_DIR/ACU_MediaProcess 1 &
+sleep $PROCESS_INIT_DELAY
+sleep $PROCESS_INIT_DELAY
+
+#**************** Launch IVR Acualb Voice Process ***************************
+#echo " "
+#echo "------------------------------------------------------------------------"
+#echo "Starting IVR Aculab Voice Process - CardId 2"
+#echo " "
+#$PRODUCT_HOME/$PRODUCT_BIN_DIR/ACU_MediaProcess 2 &
+#sleep $PROCESS_INIT_DELAY
+
+#**************** Sending SIGTRACE to IVR Processes *************************
+#sleep $PROCESS_INIT_DELAY
+. $PRODUCT_HOME/etc/scripts/TraceAculab
+
+#*****************************************************************************
+echo " "
+echo "------------------------------------------------------------------------"
+$SETCOLOR_SUCCESS
+echo "------------------- IVR MEDIA STARTUP SEQUENCE COMPLETE ----------------"
+$SETCOLOR_NORMAL
+echo "------------------------------------------------------------------------"
+echo " "
+
+#************************ End Of StartAculab ***********************************

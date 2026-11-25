@@ -1,0 +1,243 @@
+#  @(#) $Id: IvrStop,v 1.1.1.1.2.4.2.2 2016/05/11 21:38:07 mram Exp $
+#!/bin/bash
+
+#*****************************************************************************
+#Set the environment
+. /opt/ivr/etc/scripts/ivr.env
+#. $PRODUCT_HOME/etc/scripts/oam.env
+
+#*****************************************************************************
+# Source function library.
+. /opt/ivr/etc/scripts/functions
+
+#*****************************************************************************
+echo " "
+echo "------------------------------------------------------------------------"
+$SETCOLOR_WARNING
+echo "-------------------------- IVR KERNEL SHUTDOWN ------------------------"
+$SETCOLOR_NORMAL
+echo "------------------------------------------------------------------------"
+echo " "
+
+#if [ $MMP_ENABLE -eq 1 ]
+# then
+#. $PRODUCT_HOME/etc/scripts/MmpStop 
+#fi
+
+#if [ $OBD_ENABLE -eq 1 ]
+# then
+#. $PRODUCT_HOME/etc/scripts/ObdStop 
+#fi
+#
+#if [ $SAS_ENABLE -eq 1 ]
+# then
+# . $PRODUCT_HOME/etc/scripts/SasStop
+#fi
+#************************* IVR Health Check *********************************
+#echo " "
+#echo "------------------------------------------------------------------------"
+#echo -n "Shutting down IVR Healthcheck "
+#killproc IVR_HealthCheckHdlr 
+#RETVAL=$?
+#echo
+#if [ $RETVAL -ne 0 ]
+# then
+#     echo "Unable to kill IVR Healthcheck"
+#fi
+#echo " "
+#sleep $PROCESS_INIT_DELAY
+
+#************************* IVR Signaling Msg Wrapper *************************
+echo " "
+echo "------------------------------------------------------------------------"
+echo -n "Shutting down IVR Signaling Msg Wrapper          : "
+killproc IVR_MsgWrapper 
+RETVAL=$?
+echo
+if [ $RETVAL -ne 0 ]
+ then
+     echo "Unable to kill IVR Signaling Msg Wrapper"
+fi
+echo " "
+sleep $PROCESS_INIT_DELAY
+
+#************************* IVR EvrWriter   **********************************
+echo " "
+echo "------------------------------------------------------------------------"
+echo -n "Shutting down IVR EvrWriter                      : "
+killproc IVR_EvrWriter 
+RETVAL=$?
+echo
+if [ $RETVAL -ne 0 ]
+ then
+     echo "Unable to kill IVR EvrWriter"
+fi
+echo " "
+sleep $PROCESS_INIT_DELAY
+
+
+#************************* IVR CCXML Process ********************************
+echo " "
+echo "------------------------------------------------------------------------"
+echo -n "Shutting down IVR CCXML Process                  : "
+killproc IVR_CcxmlProcessor 
+RETVAL=$?
+echo
+if [ $RETVAL -ne 0 ]
+ then
+     echo "Unable to kill IVR CCXML Process"
+fi
+echo " "
+sleep $PROCESS_INIT_DELAY
+
+#*************************** IVR VXML Process *******************************
+echo " "
+echo "------------------------------------------------------------------------"
+echo -n "Shutting down IVR VXML Process                   : "
+killproc IVR_VxmlProcessor 
+RETVAL=$?
+echo
+if [ $RETVAL -ne 0 ]
+ then
+     echo "Unable to kill IVR VXML Process"
+fi
+echo " "
+sleep $PROCESS_INIT_DELAY
+
+
+#************************* IVR Peg Handler **********************************
+#echo " "
+#echo "------------------------------------------------------------------------"
+#echo -n "Shutting down IVR Peg Handler                    : "
+#killproc IVR_PegHandler 
+#RETVAL=$?
+#echo
+#if [ $RETVAL -ne 0 ]
+# then
+#     echo "Unable to kill IVR Peg Handler"
+#fi
+#echo " "
+#sleep $PROCESS_INIT_DELAY
+#
+#************************* IVR Peg Writer **********************************
+#echo " "
+#echo "------------------------------------------------------------------------"
+#echo -n "Shutting down IVR Peg Writer                     : "
+#killproc IVR_PegWriter 
+#RETVAL=$?
+#echo
+#if [ $RETVAL -ne 0 ]
+# then
+#     echo "Unable to kill IVR Peg Writer"
+#fi
+#echo " "
+#sleep $PROCESS_INIT_DELAY
+#
+#************************* IVR BillingServer ******************************
+#echo " "
+#echo "------------------------------------------------------------------------"
+#echo -n "Shutting down IVR BillingServer                  : "
+#killproc IVR_BillingServer 
+#RETVAL=$?
+#echo
+#if [ $RETVAL -ne 0 ]
+## then
+#     echo "Unable to kill IVR BillingServer"
+#fi
+#echo " "
+#sleep $PROCESS_INIT_DELAY
+
+#************************* IVR RPC Request Server ***************************
+
+#if [ $IVR_EXTAPP -eq 1 ]
+# then
+#echo " "
+#echo "------------------------------------------------------------------------"
+#echo -n "Shutting down IVR RPC Request Server             :  "
+#killproc IVR_RpcReq_Server 
+#RETVAL=$?
+#echo
+#if [ $RETVAL -ne 0 ]
+# then
+#     echo "Unable to kill IVR RPC Request Server"
+#fi
+#echo " "
+#sleep $PROCESS_INIT_DELAY
+
+#*************************** IVR RPC Response Client ************************
+#echo " "
+#echo "------------------------------------------------------------------------"
+#echo -n "Shutting down IVR RPC Response Client            : "
+#killproc IVR_RpcRsp_Client 
+#RETVAL=$?
+#echo
+#if [ $RETVAL -ne 0 ]
+# then
+#     echo "Unable to kill IVR RPC Response Client"
+#fi
+#echo " "
+#sleep $PROCESS_INIT_DELAY
+#fi
+
+
+#************************* IVR Media Process ******************************
+#echo " "
+#echo "------------------------------------------------------------------------"
+#echo "--------------------- IVR Media Process ShutDown -----------------------"
+#echo "------------------------------------------------------------------------"
+#if [ $IVR_MEDIA -eq 1 ]
+# then
+#   source $PRODUCT_HOME/etc/scripts/StopSynway
+#fi
+#
+#if [ $IVR_MEDIA -eq 2 ]
+# then
+#   source $PRODUCT_HOME/etc/scripts/StopAculab
+#fi
+#
+#if [ $IVR_MEDIA -eq 3 ]
+# then
+#   source $PRODUCT_HOME/etc/scripts/StopDialogic
+#fi
+#************************* ACU_SipHandler ****************************
+echo " "
+echo -----------------------------------------------------------------
+echo -n Shutting down ACU_SipHandler :
+killproc ACU_SipHandler
+RETVAL=$?
+echo
+if [ $RETVAL -ne 0 ]
+   then
+      echo Unable to kill ACU_SipHandler
+fi
+echo " "
+sleep $PROCESS_INIT_DELAY
+      
+#************************* IVR Session Manager ******************************
+echo " "
+echo "------------------------------------------------------------------------"
+echo -n "Shutting down IVR Session Manager                : "
+killproc IVR_SessionManager 
+RETVAL=$?
+echo
+if [ $RETVAL -ne 0 ]
+ then
+     echo "Unable to kill IVR Session Manager"
+fi
+echo " "
+sleep $PROCESS_INIT_DELAY
+#*****************************************************************************
+echo " "
+echo "------------------------------------------------------------------------"
+echo "Cleaning IPCs "
+. $PRODUCT_HOME/etc/scripts/CleanIPC
+
+#*****************************************************************************
+echo " "
+echo "------------------------------------------------------------------------"
+$SETCOLOR_WARNING
+echo "---------------- IVR KERNEL SHUTDOWN SEQUENCE COMPLETE ----------------"
+$SETCOLOR_NORMAL
+echo "------------------------------------------------------------------------"
+echo " "
+#*********************** End Of IvrStop *************************************

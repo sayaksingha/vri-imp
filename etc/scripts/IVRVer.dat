@@ -1,0 +1,9 @@
+#  @(#) $Id: IVRVer.dat,v 1.1.1.1.2.3.2.2 2016/07/27 23:17:57 mram Exp $
+
+IVR_SessionManager........:IVR_1-3-RC4:Rel 27-Jul-2016:018bee04a3847e3fca42a5da0cb5bdb2
+IVR_VxmlProcessor.........:IVR_1-3-RC4:Rel 27-Jul-2016:19838faf261d5d42a606c08559e9ce9e
+IVR_CcxmlProcessor........:IVR_1-3-RC4:Rel 27-Jul-2016:740940446083024ed6451ad99648d1da
+ACU_SipHandler............:IVR_1-3-RC4:Rel 27-Jul-2016:952c4459a448288a4364ee9e8ca37e9b
+IVR_EvrWriter.............:IVR_1-3-RC4:Rel 27-Jul-2016:3a783064bc5c56f9e272b63b07801cb1
+IVR_ExecuteOperation......:IVR_1-3-RC4:Rel 27-Jul-2016:ce582028df298d0ebf521b2dfbd0e526
+IVR_MsgWrapper............:IVR_1-3-RC4:Rel 27-Jul-2016:503fc06067fc6c829f26bcba0818c5e0

@@ -1,0 +1,229 @@
+#  @(#) $Id: IvrTrace,v 1.1.1.1.2.4.2.1 2016/04/13 23:34:59 mram Exp $
+#!/bin/sh
+
+#*****************************************************************************
+#Set the environment
+#*****************************************************************************
+
+if [ ! -f /opt/ivr/etc/scripts/ivr.env ]
+then
+echo "Please edit this script to set the ivr.env path"
+echo ""
+echo "---------------------------------------"
+echo -e "\033[35mAborting Ivr SIGCFG Sequence\033[0m"
+exit
+fi
+source /opt/ivr/etc/scripts/ivr.env
+
+#*****************************************************************************
+if [ -z "${PRODUCT_HOME}" ]
+then
+echo "PRODUCT_HOME not set"
+echo ""
+echo "---------------------------------------"
+echo -e "\033[35mAborting Ivr SIGCFG Sequence\033[0m"
+exit
+fi
+
+#*****************************************************************************
+# Source function library.
+#*****************************************************************************
+if [ ! -f $PRODUCT_HOME/etc/scripts/functions ]
+then
+echo "functions is not present in the expected path - " $PRODUCT_HOME/etc/scripts/
+echo ""
+echo "---------------------------------------"
+echo -e "\033[35mAborting Ivr SIGTRACE Sequence\033[0m"
+exit
+fi
+source $PRODUCT_HOME/etc/scripts/functions
+
+#************************* IVR_SessionManager ********************************
+echo " "
+echo "------------------------------------------------------------------------"
+echo -n "Sending SIGTRACE to IVR_SessionManager    : "
+killproc IVR_SessionManager -12
+RETVAL=$?
+echo
+if [ $RETVAL -ne 0 ]
+ then
+     echo "Unable to send SIGTRACE to IVR_SessionManager"
+fi
+#sleep $PROCESS_INIT_DELAY
+
+#************************* IVR_VxmlProcessor**********************************
+echo " "
+echo "------------------------------------------------------------------------"
+echo -n "Sending SIGTRACE to IVR_VxmlProcessor     : "
+killproc IVR_VxmlProcessor -12
+RETVAL=$?
+echo
+if [ $RETVAL -ne 0 ]
+ then
+     echo "Unable to send SIGTRACE to IVR_VxmlProcessor"
+fi
+#sleep $PROCESS_INIT_DELAY
+
+#************************* IVR_CcxmlProcessor *******************************
+echo " "
+echo "------------------------------------------------------------------------"
+echo -n "Sending SIGTRACE to IVR_CcxmlProcessor    : "
+killproc IVR_CcxmlProcessor -12
+RETVAL=$?
+echo
+if [ $RETVAL -ne 0 ]
+ then
+     echo "Unable to send SIGTRACE to IVR_CcxmlProcessor"
+fi
+#sleep $PROCESS_INIT_DELAY
+
+#************************* IVR_ChannelStatus ********************************
+#echo " "
+#echo "------------------------------------------------------------------------"
+#echo -n "Sending SIGTRACE to IVR_ChannelStatus     : "
+#killproc IVR_ChannelStatus -12
+#RETVAL=$?
+#echo
+#if [ $RETVAL -ne 0 ]
+# then
+#     echo "Unable to send SIGTRACE to IVR_ChannelStatus"
+#fi
+#sleep $PROCESS_INIT_DELAY
+
+#************************* IVR_MsgWrapper ***********************************
+echo " "
+echo "------------------------------------------------------------------------"
+echo -n "Sending SIGTRACE to IVR_MsgWrapper        : "
+killproc IVR_MsgWrapper -12
+RETVAL=$?
+echo
+if [ $RETVAL -ne 0 ]
+ then
+     echo "Unable to send SIGTRACE to IVR_MsgWrapper"
+fi
+#sleep $PROCESS_INIT_DELAY
+#************************************************************
+echo " "
+echo "------------------------------------------------------------------------"
+echo -n "Sending SIGTRACE to  ACU_SipHandler       :"
+sendsignal ACU_SipHandler -12
+RETVAL=$?
+echo
+if [ $RETVAL -ne 0 ]
+   then
+      echo "Unable to send signal to ACU_SipHandler          :"
+fi
+
+
+#************************* IVR_PegHandler ***********************************
+#echo " "
+#echo "------------------------------------------------------------------------"
+#echo -n "Sending SIGTRACE to IVR_PegHandler        : "
+#killproc IVR_PegHandler -12
+#RETVAL=$?
+#echo
+#if [ $RETVAL -ne 0 ]
+# then
+#     echo "Unable to send SIGTRACE to IVR_PegHandler"
+#fi
+#sleep $PROCESS_INIT_DELAY
+
+
+
+#************************* IVR_BillingServer ********************************
+#echo " "
+#echo "------------------------------------------------------------------------"
+#echo -n "Sending SIGTRACE to IVR_BillingServer     : "
+#killproc IVR_BillingServer -12
+#RETVAL=$?
+#echo
+#if [ $RETVAL -ne 0 ]
+# then
+#     echo "Unable to send SIGTRACE to IVR_BillingServer"
+#fi
+##sleep $PROCESS_INIT_DELAY
+#
+#if [ $IVR_MEDIA -eq 1 ]
+# then
+#   source $PRODUCT_HOME/etc/scripts/TraceSynway
+#fi
+#
+#if [ $IVR_MEDIA -eq 2 ]
+# then
+#   source $PRODUCT_HOME/etc/scripts/TraceAculab
+#fi
+#
+#if [ $IVR_MEDIA -eq 3 ]
+# then
+#   source $PRODUCT_HOME/etc/scripts/TraceDialogic
+#fi
+
+#************************* IVR EvrWriter   **********************************
+echo " "
+echo "------------------------------------------------------------------------"
+echo -n "Sending SIGTRACE to IVR_EvrWriter         : "
+killproc IVR_EvrWriter -12
+RETVAL=$?
+echo
+if [ $RETVAL -ne 0 ]
+ then
+      echo "Unable to send SIGTRACE to IVR_EvrWriter"
+fi
+
+
+#*****************************************************************************
+echo " "
+echo "------------------------------------------------------------------------"
+$SETCOLOR_SUCCESS
+echo "------------------- IVR KERNEL SIG TRACE COMPLETE ---------------------"
+$SETCOLOR_NORMAL
+echo "------------------------------------------------------------------------"
+echo " "
+
+
+#if [ $IVR_EXTAPP -eq 1 ]
+# then
+##************************* IVR_RpcReq_Server ********************************
+#echo " "
+#echo "------------------------------------------------------------------------"
+#echo -n "Sending SIGTRACE to IVR_RpcReq_Server     : "
+#killproc IVR_RpcReq_Server -12
+#RETVAL=$?
+#echo
+#if [ $RETVAL -ne 0 ]
+# then
+#     echo "Unable to send SIGTRACE to IVR_RpcReq_Server"
+#fi
+#sleep $PROCESS_INIT_DELAY
+
+
+#************************* IVR_RpcRsp_Client ********************************
+#echo " "
+#echo "------------------------------------------------------------------------"
+#echo -n "Sending SIGTRACE to IVR_RpcRsp_Client     : "
+#killproc IVR_RpcRsp_Client -12
+#RETVAL=$?
+#echo
+#if [ $RETVAL -ne 0 ]
+# then
+#     echo "Unable to send SIGTRACE to IVR_RpcRsp_Client"
+#fi
+##sleep $PROCESS_INIT_DELAY
+#fi
+#
+#if [ $MMP_ENABLE -eq 1 ]
+# then
+#    source $PRODUCT_HOME/etc/scripts/MmpTrace
+#fi
+#
+#if [ $OBD_ENABLE -eq 1 ]
+# then
+#    source $PRODUCT_HOME/etc/scripts/ObdTrace
+#fi
+#
+#if [ $SAS_ENABLE -eq 1 ]
+#    then
+#        source $PRODUCT_HOME/etc/scripts/SasTrace
+#        fi
+#*********************** End Of IVR Trace ************************************
+

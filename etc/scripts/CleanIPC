@@ -1,0 +1,69 @@
+#  @(#) $Id: CleanIPC,v 1.1.1.1.2.4 2016/04/12 21:59:12 shijuc Exp $
+#!/bin/sh
+
+if test $# -lt 1
+  then
+    user=ivr
+else
+    user=$1
+fi
+
+#***************** Removing the shared memory segments ***********************
+echo " "
+echo "------------------------------------------------------------------------"
+echo  "Deleting Shared memory created by $user"
+ipcs -m | grep $user | tr -s " " | cut -d " " -f2 >shmidfile
+lines=`cat shmidfile | wc -l`
+index=1
+while [ $index -le $lines ]
+do
+  shmid=`cat shmidfile | head -$index | tail -1`
+  ipcrm shm $shmid >/dev/null
+  retval=$?
+  if [ $retval -ne 0 ]
+  then
+     echo "cannot remove the id : $shmid"
+  fi
+  index=`expr $index + 1`
+done
+
+#******************* Removing Message queues *********************************
+echo " "
+echo "------------------------------------------------------------------------"
+echo  "Deleting Message Queues created by $user"
+ipcs -q | grep $user | tr -s " " | cut -d " " -f2 >qidfile
+lines=`cat qidfile | wc -l`
+index=1
+while [ $index -le $lines ]
+do
+  qid=`cat qidfile | head -$index | tail -1`
+  ipcrm msg $qid
+  retval=$?
+  if [ $retval -ne 0 ]
+  then
+     echo "cannot remove the id : $qid"
+  fi
+  index=`expr $index + 1`
+done
+
+#******************* Removing semaphores *************************************
+echo " "
+echo "------------------------------------------------------------------------"
+echo  "Deleting Semaphores created by $user"
+ipcs -s | grep $user | tr -s " " | cut -d " " -f2 >semidfile
+lines=`cat semidfile | wc -l`
+index=1
+while [ $index -le $lines ]
+do
+  semid=`cat semidfile | head -$index | tail -1`
+  ipcrm sem $semid
+  retval=$?
+  if [ $retval -ne 0 ]
+  then
+     echo "cannot remove the id : $semid"
+  fi
+  index=`expr $index + 1`
+done
+
+#******************* Removing temporary files ********************************
+rm -rf shmidfile qidfile semidfile

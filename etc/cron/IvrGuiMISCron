@@ -1,0 +1,3 @@
+*/10 * * * * /bin/bash -c "source <PRODUCT_HOME>/etc/scripts/CumulationTable.env && <PRODUCT_HOME>/etc/dbscripts/Postgres/CumulationTable.sh 1 4 <IVR_TSSGUI_DB_USERNAME> <IVR_TSSGUI_DB_PASSWORD> <IVR_TSSGUI_DB_IP> <IVR_TSSGUI_DB> <IVR_TSSGUI_SCHEMA> >> <PRODUCT_HOME>/var/log/error.log 2>&1"
+
+*/10 * * * * /bin/bash -c "source <PRODUCT_HOME>/etc/scripts/CumulationTable.env && <PRODUCT_HOME>/etc/dbscripts/Postgres/CumulationTable.sh 2 4 <IVR_TSSGUI_DB_USERNAME> <IVR_TSSGUI_DB_PASSWORD> <IVR_TSSGUI_DB_IP> <IVR_TSSGUI_DB> <IVR_TSSGUI_SCHEMA>"

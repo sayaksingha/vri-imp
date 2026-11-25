@@ -1,0 +1,82 @@
+#  @(#) $Id: ShowQList,v 1.1.1.1.2.3 2016/04/12 21:59:13 shijuc Exp $
+####################################################################
+# This Script Shows all the non Empty Queues List                  #
+# Originated By : Kothari Komal                   DATE:22-FEB-2011 #
+####################################################################
+if test $# -lt 1
+then
+   showall=0
+else
+   showall=$1
+fi
+
+User[0]="ivr"
+#User[1]="tts"
+
+product="sctest"
+rootpath="/opt"
+cfgpath="etc/config/ipc.cfg"
+
+tLen=${#User[@]}
+
+echo "******************************************************************************************"
+ipcs -q| grep -e 0x| grep -v grep |cut -c 1-11,12-21,22-33,58- |
+while read a; do
+   # Hex Key --> vHexKey
+   vHexKey=$(echo $a|cut -d" " -f1)
+   # Size --> vSize
+   vSize=$(echo $a|cut -d" " -f4)
+   # Decimal Key --> vDecKey
+   vDecKey=$(($vHexKey))
+   # User -->
+   vUser=$(echo $a|cut -d" " -f3)
+   # SHM ID --> vMsgId
+   vMsgId=$(echo $a|cut -d" " -f2)
+#   echo $a.
+#   echo $vHexKey,$vSize,$vDecKey,$vUser,.
+#   if [ $vUser == 'root' ]
+#   then
+#     vUser="$product"
+#  fi
+#  if [ $vUser == 'scuser' ]
+#  then
+#     vUser="$product"
+#  fi
+   if [ $vDecKey -ne 0 ]
+   then
+      if [ $vSize -ne 0 ]
+      then
+        for (( i=0; i<${tLen}; i++ ));
+        do
+         key=$(grep $vDecKey $rootpath/${User[$i]}/$cfgpath)
+         if [ -n "$key" ]
+         then
+           while read line;
+                do
+       #echo -e "\E[1m\E[33m${User[$i]}: \E[34m("$key")"  '\E[30m= '$vHexKey "($vMsgId)" ='\E[31m'$vSize'\E[0m'
+       #echo -e "\E[1m\E[33m${User[$i]}: \E[34m("$line")"  '\E[30m= '$vHexKey "($vMsgId)" ='\E[31m'$vSize'\E[0m'
+            printf "\E[34m%6s: \E[35m[QKey:%6s | %10s |QId: %8s]\E[39m =>\E[32m%6d Msgs\E[39m => \E[31m%s\E[0m\n" ${User[$i]} $vDecKey $vHexKey $vMsgId $vSize `echo $line | awk '{print $1}'`
+       done <<<"$key"
+         fi
+        done
+      else
+         if [ $showall -ne 0 ]
+         then
+           for (( i=0; i<${tLen}; i++ ));
+           do
+             key=$(grep $vDecKey $rootpath/${User[$i]}/$cfgpath)
+             if [ -n "$key" ]
+             then
+        while read line;
+        do
+           #echo -e "\E[1m\E[33m${User[$i]}: \E[34m("$key")"  '\E[30m= '$vHexKey "($vMsgId)" ='\E[31m'$vSize'\E[0m'
+                printf "\E[34m%6s: \E[35m[QKey:%6s | %10s |QId: %8s]\E[39m =>\E[32m%6d Msgs\E[39m => \E[31m%s\E[0m\n" ${User[$i]} $vDecKey $vHexKey $vMsgId $vSize `echo $line | awk '{print $1}'`
+       done <<<"$key"
+             fi
+           done
+         fi
+      fi
+   fi
+done
+echo "******************************************************************************************"
+

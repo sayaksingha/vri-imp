@@ -1,0 +1,82 @@
+#  @(#) $Id: trace_enable,v 1.1.1.1.2.4.2.1 2016/04/13 23:42:13 mram Exp $
+#**************************** IVR Kernel Trace ***********************
+export TRACE_IVR_VXML=1
+export TRACE_IVR_CCXML=1
+export TRACE_IVR_PROMPT_LIB=1
+export TRACE_IVR_SESSION=1
+export TRACE_IVR_WRAPPER=1
+export TRACE_IVR_EVR_WRITER=1
+export TRACE_SIP_HDLR=1
+
+#export TRACE_IVR_PEG_HDLR=1
+#export TRACE_IVR_PEG_WRITER=1
+#export TRACE_IVR_CHANNEL_MGR=1
+#export TRACE_IVR_CHANNEL_DETAILS=1
+#export TRACE_IVR_CHANNEL_STATUS=1
+
+#export TRACE_IVR_SCHEDULER=1
+
+#export TRACE_ONLINE_CHARGING=1
+#export TRACE_BILLING_SERVER=1
+
+#**************************** IVR Media Process Trace ****************
+#if [ $IVR_MEDIA -eq 1 ]
+# then
+#   export TRACE_SYNWAY_MP_MANAGER=1
+#fi
+#
+#if [ $IVR_MEDIA -eq 2 ]
+# then
+#   export TRACE_ACULAB_MP_MGR=1
+#fi
+#
+#if [ $IVR_MEDIA -eq 3 ]
+# then
+#   if [ $DIALOGIC -eq 1 ]
+#      then
+#         export TRACE_HMP=1
+#         export TRACE_HMP_EVR_WRITER=1
+#   fi
+#   
+#   if [ $DIALOGIC -eq 2 ]
+#      then
+#         export TRACE_ISDN_MEDIA_HDLR=1
+#   fi
+#fi
+
+#**************************** IVR RPC Trace **************************
+#export TRACE_IVR_RPC_REQ_CLIENT=1
+#export TRACE_IVR_RPC_REQ_SERVER=1
+#export TRACE_IVR_RPC_RSP_CLIENT=1
+#export TRACE_IVR_RPC_RSP_SERVER=1
+
+#****************** Util/Coam Traces *********************************
+#export TRACE_HEALTH_CHECK=1
+#export TRACE_QUEUE=1
+#export TRACE_SOCKET=1
+#export TRACE_SHMEM=1
+#export TRACE_CFGREAD=1
+#export TRACE_CDR_GEN=1
+#export TRACE_OAM=1
+#export TRACE_LOG_HANDLER=1
+#export TRACE_PROCMON=1
+
+
+#**************************** MMP CORE Trace *************************
+#if [ $MMP_ENABLE -eq 1 ]
+# then
+#    source /opt/mmp/etc/scripts/trace_enable 
+#fi
+
+#**************************** OBD CORE Trace *************************
+
+#if [ $OBD_ENABLE -eq 1 ]
+# then
+#    source /opt/obd/etc/scripts/trace_enable 
+#fi
+#if [ $SAS_ENABLE -eq 1 ]
+#  then
+#    source /opt/sas/etc/scripts/trace_enable
+#fi
+#****************** End Of trace_enable ******************************
+

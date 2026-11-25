@@ -1,0 +1,34 @@
+#  @(#) $Id: StopDialogic,v 1.1.4.3 2016/04/12 21:59:14 shijuc Exp $
+#************************* DLG_HostMediaProcess  ********************************
+if [ $DIALOGIC -eq 1 ]
+then
+   echo " "
+   echo "------------------------------------------------------------------------"
+   echo -n "Shutting down DLG_HostMediaProcess          : "
+   killproc DLG_HostMediaProcess
+   RETVAL=$?
+   echo
+   if [ $RETVAL -ne 0 ]
+   then
+   echo "Unable to kill DLG_HostMediaProcess"
+   fi
+   echo " "
+   sleep $PROCESS_INIT_DELAY
+fi
+
+if [ $DIALOGIC -eq 2 ]
+then
+   echo " "
+   echo "------------------------------------------------------------------------"
+   echo -n "Shutting down DLG_IsdnMediaProcess          : "
+   killproc DLG_IsdnMediaProcess
+   RETVAL=$?
+   echo
+   if [ $RETVAL -ne 0 ]
+   then
+   echo "Unable to kill DLG_IsdnMediaProcess"
+   fi
+   echo " "
+   sleep $PROCESS_INIT_DELAY
+fi
+#*****************************************************************************

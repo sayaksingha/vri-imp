@@ -1,0 +1,68 @@
+--  @(#) $Id: IvrUserMgmtCreateDb.sql,v 1.1.4.1 2016/04/12 21:59:12 shijuc Exp $
+
+
+CREATE TABLE GUI_USER_TYPE_MASTER (
+  USER_TYPE_ID NUMBER(6) NOT NULL ,
+  USER_TYPE_NAME varchar(20) default NULL,
+  USER_TYPE NUMBER(3) default NULL,
+  constraint PK_GUI_USER_TYPE_MASTER primary key (USER_TYPE_ID),
+  constraint AK_AK_KEY_2_GUI_USER unique (USER_TYPE_NAME)
+);
+
+CREATE TABLE GUI_MODULE_MAST (
+  MODULE_ID NUMBER(6) NOT NULL ,
+  MODULE_NAME varchar(20) default NULL,
+  FLAG char(1) default NULL,
+  constraint PK_GUI_MODULE_MAST primary key (MODULE_ID)
+);
+
+CREATE TABLE GUI_SUBMODULE_MAST (
+  SUBMODULE_ID NUMBER(6) NOT NULL,
+  MODULE_ID NUMBER(6) ,
+  SUBMODULE_NAME varchar(50) NOT NULL,
+  FLAG VARCHAR(1) default NULL,
+  PERMISSION_DISPLAY VARCHAR(1) default NULL,
+  constraint PK_GUI_SUBMODULE_MAST primary key (SUBMODULE_ID),
+  constraint AK_AK_SUBMODULE_MAST_GUI_SUBM unique (MODULE_ID, SUBMODULE_NAME)
+); 
+
+CREATE TABLE GUI_USER_PERMISSIONS_DET (
+  USER_TYPE_ID NUMBER(6) ,
+  SUBMODULE_ID NUMBER(6) ,
+  WRITE_PERMISSION NUMBER(6) 
+); 
+
+CREATE TABLE GUI_USER_DETAILS (
+  USER_ID NUMBER(6) NOT NULL ,
+  USER_TYPE_ID NUMBER(6) default NULL,
+  USER_NAME varchar(25) NOT NULL,
+  USER_PASS varchar(35) default NULL,
+  USER_PRIVILEGE varchar(1) default NULL,
+  MAIL_ID varchar(100) default NULL,
+  CONTACT_NUMBER varchar(20) default NULL,
+  constraint PK_GUI_USER_DETAILS primary key (USER_ID)
+); 
+
+CREATE TABLE IVR_GUI_LOGS (
+  GEN_TIME date  default NULL,
+  UNAME varchar(20) default NULL,
+  MODULE varchar(20) default NULL,
+  SUBMODULE varchar(50) default NULL,
+  OPERATION varchar(50) default NULL,
+  PREVIOUS_VALUE varchar(500) default NULL,
+  NEW_VALUE varchar(500) default NULL,
+  IPADDRESS varchar(50) default NULL,
+  NODE varchar(50) default NULL
+); 
+
+CREATE TABLE GUI_PROCEDURE_EXC_TIME (
+  FROM_DATE date default NULL,
+  PROC_NAME varchar(50) default NULL
+);
+
+CREATE TABLE USER_LOGGED_INFORMATION (
+  USER_ID NUMBER(6) ,
+  BROWSER varchar(50) default NULL,
+  CLIENT_ADDRESS varchar(50) default NULL,
+  LOGGED_DATE DATE DEFAULT sysdate NOT NULL
+);

@@ -1,0 +1,224 @@
+#  @(#) $Id: IvrConfig,v 1.1.4.3.2.1 2016/04/13 23:32:04 mram Exp $
+#!/bin/sh
+
+#*****************************************************************************
+#Set the environment
+#*****************************************************************************
+
+if [ ! -f /opt/ivr/etc/scripts/ivr.env ]
+then
+echo "Please edit this script to set the ivr.env path"
+echo ""
+echo "---------------------------------------"
+echo -e "\033[35mAborting Ivr SIGCFG Sequence\033[0m"
+exit
+fi
+source /opt/ivr/etc/scripts/ivr.env
+
+#*****************************************************************************
+if [ -z "${PRODUCT_HOME}" ]
+then
+echo "PRODUCT_HOME not set"
+echo ""
+echo "---------------------------------------"
+echo -e "\033[35mAborting Ivr SIGCFG Sequence\033[0m"
+exit
+fi
+
+#*****************************************************************************
+# Source function library.
+#*****************************************************************************
+if [ ! -f $PRODUCT_HOME/etc/scripts/functions ]
+then
+echo "functions is not present in the expected path - " $PRODUCT_HOME/etc/scripts/
+echo ""
+echo "---------------------------------------"
+echo -e "\033[35mAborting Ivr SIGCFG Sequence\033[0m"
+exit
+fi
+source $PRODUCT_HOME/etc/scripts/functions
+
+#************************* IVR_SessionManager ********************************
+echo " "
+echo "------------------------------------------------------------------------"
+echo -n "Sending SIGCFG to IVR_SessionManager    : "
+killproc IVR_SessionManager -10
+RETVAL=$?
+echo
+if [ $RETVAL -ne 0 ]
+ then
+     echo "Unable to send SIGCFG to IVR_SessionManager"
+fi
+#sleep $PROCESS_INIT_DELAY
+
+#************************* IVR_VxmlProcessor**********************************
+echo " "
+echo "------------------------------------------------------------------------"
+echo -n "Sending SIGCFG to IVR_VxmlProcessor     : "
+killproc IVR_VxmlProcessor -10
+RETVAL=$?
+echo
+if [ $RETVAL -ne 0 ]
+ then
+     echo "Unable to send SIGCFG to IVR_VxmlProcessor"
+fi
+#sleep $PROCESS_INIT_DELAY
+
+#************************* IVR_CcxmlProcessor *******************************
+echo " "
+echo "------------------------------------------------------------------------"
+echo -n "Sending SIGCFG to IVR_CcxmlProcessor    : "
+killproc IVR_CcxmlProcessor -10
+RETVAL=$?
+echo
+if [ $RETVAL -ne 0 ]
+ then
+     echo "Unable to send SIGCFG to IVR_CcxmlProcessor"
+fi
+#sleep $PROCESS_INIT_DELAY
+
+#************************* IVR_ChannelStatus ********************************
+#echo " "
+#echo "------------------------------------------------------------------------"
+#echo -n "Sending SIGCFG to IVR_ChannelStatus     : "
+#killproc IVR_ChannelStatus -10
+#RETVAL=$?
+#echo
+#if [ $RETVAL -ne 0 ]
+# then
+#     echo "Unable to send SIGCFG to IVR_ChannelStatus"
+#fi
+#sleep $PROCESS_INIT_DELAY
+
+#************************* IVR_MsgWrapper ***********************************
+echo " "
+echo "------------------------------------------------------------------------"
+echo -n "Sending SIGCFG to IVR_MsgWrapper        : "
+killproc IVR_MsgWrapper -10
+RETVAL=$?
+echo
+if [ $RETVAL -ne 0 ]
+ then
+     echo "Unable to send SIGCFG to IVR_MsgWrapper"
+fi
+#sleep $PROCESS_INIT_DELAY
+#************************* ACU_SipHandler ***********************************
+echo -n "Sending SIGCFG signal to  ACU_SipHandler        :"
+sendsignal ACU_SipHandler -10
+RETVAL=0
+echo
+if [  -ne 0 ]
+   then
+   echo "Unable to send signal to ACU_SipHandler          :"
+fi
+echo " "
+
+#************************* IVR_PegHandler ***********************************
+#echo " "
+#echo "------------------------------------------------------------------------"
+#echo -n "Sending SIGCFG to IVR_PegHandler        : "
+#killproc IVR_PegHandler -10
+#RETVAL=$?
+#echo
+#if [ $RETVAL -ne 0 ]
+# then
+#     echo "Unable to send SIGCFG to IVR_PegHandler"
+#fi
+#sleep $PROCESS_INIT_DELAY
+
+
+#************************* IVR_Scheduler ********************************
+#echo " "
+#echo "------------------------------------------------------------------------"
+#echo -n "Sending SIGCFG to                       : "
+#killproc IVR_Scheduler -10
+#RETVAL=$?
+#echo
+#if [ $RETVAL -ne 0 ]
+# then
+#     echo "Unable to send SIGCFG to IVR_Scheduler"
+#fi
+#sleep $PROCESS_INIT_DELAY
+
+#************************* IVR_BillingServer ********************************
+#echo " "
+#echo "------------------------------------------------------------------------"
+#echo -n "Sending SIGCFG to IVR_BillingServer     : "
+#killproc IVR_BillingServer -10
+#RETVAL=$?
+#echo
+#if [ $RETVAL -ne 0 ]
+# then
+#     echo "Unable to send SIGCFG to IVR_BillingServer"
+#fi
+#sleep $PROCESS_INIT_DELAY
+
+#if [ $IVR_MEDIA -eq 1 ]
+# then
+#   source $PRODUCT_HOME/etc/scripts/ConfigSynway
+#fi
+#
+#if [ $IVR_MEDIA -eq 2 ]
+# then
+#   source $PRODUCT_HOME/etc/scripts/ConfigAculab
+#fi
+#
+#if [ $IVR_MEDIA -eq 3 ]
+# then
+#   source $PRODUCT_HOME/etc/scripts/ConfigDialogic
+#fi
+
+#*****************************************************************************
+echo " "
+echo "------------------------------------------------------------------------"
+$SETCOLOR_SUCCESS
+echo "-------------------- IVR KERNEL SIG CFG COMPLETE -----------------------"
+$SETCOLOR_NORMAL
+echo "------------------------------------------------------------------------"
+echo " "
+
+#if [ $IVR_EXTAPP -eq 1 ]
+# then
+##************************* IVR_RpcReq_Server ********************************
+#echo " "
+#echo "------------------------------------------------------------------------"
+#echo -n "Sending SIGCFG to IVR_RpcReq_Server     : "
+#killproc IVR_RpcReq_Server -10
+#RETVAL=$?
+#echo
+#if [ $RETVAL -ne 0 ]
+# then
+#     echo "Unable to send SIGCFG to IVR_RpcReq_Server"
+#fi
+#sleep $PROCESS_INIT_DELAY
+
+#************************* IVR_RpcRsp_Client ********************************
+#echo " "
+#echo "------------------------------------------------------------------------"
+#echo -n "Sending SIGCFG to IVR_RpcRsp_Client     : "
+#killproc IVR_RpcRsp_Client -10
+#RETVAL=$?
+#echo
+#if [ $RETVAL -ne 0 ]
+# then
+#     echo "Unable to send SIGCFG to IVR_RpcRsp_Client"
+#fi
+#sleep $PROCESS_INIT_DELAY
+#fi
+
+#if [ $MMP_ENABLE -eq 1 ]
+# then
+#    source $PRODUCT_HOME/etc/scripts/MmpConfig 
+#fi
+#
+#if [ $OBD_ENABLE -eq 1 ]
+# then
+#    source $PRODUCT_HOME/etc/scripts/ObdConfig 
+#fi
+#
+#if [ $SAS_ENABLE -eq 1 ]
+# then
+#     source $PRODUCT_HOME/etc/scripts/SasConfig
+#fi
+
+#*********************** End Of IVR Config ************************************

@@ -1,0 +1,2 @@
+*/1 * * * * sh <PRODUCT_HOME>/etc/scripts/IvrGuiServerApiStateCheck.sh >> <PRODUCT_HOME>/restapi/ivrServer/logs/IvrGuiServerApiMonitor.out 2>&1
+

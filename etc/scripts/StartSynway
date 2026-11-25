@@ -1,0 +1,79 @@
+#  @(#) $Id: StartSynway,v 1.1.1.1.2.5 2016/04/12 21:59:14 shijuc Exp $
+#!/bin/sh
+
+#*****************************************************************************
+#Set the environment
+. /opt/ivr/etc/scripts/ivr.env
+. $PRODUCT_HOME/etc/scripts/oam.env
+
+# Enabling Trace for Synway Voice Process
+#export TRACE_SYNWAY_MP_MANAGER=1
+
+#*****************************************************************************
+# Source function library.
+. $PRODUCT_HOME/etc/scripts/functions
+
+#*****************************************************************************
+echo " "
+echo "------------------------------------------------------------------------"
+$SETCOLOR_SUCCESS
+echo "-------------------------- IVR MEDIA STARTUP ---------------------------"
+$SETCOLOR_NORMAL
+echo "------------------------------------------------------------------------"
+echo " "
+
+#*****************************************************************************
+echo " "
+echo "------------------------------------------------------------------------"
+echo "Setting core file limit to 5000"
+echo " "
+ulimit -c 5000
+
+#**************** Launch IVR Synway Voice Process ***************************
+#echo " "
+#echo "------------------------------------------------------------------------"
+#echo "Starting IVR Synway Voice Process"
+#echo " "
+#$PRODUCT_HOME/$PRODUCT_BIN_DIR/SNW_MediaProcess <Board Id> <ShConfig File> <ShIndex File> &
+#sleep $PROCESS_INIT_DELAY
+
+#**************** Launch IVR Synway Voice Process ***************************
+echo " "
+echo "------------------------------------------------------------------------"
+echo "Starting IVR Synway Voice Process - Board 0"
+echo " "
+$PRODUCT_HOME/$PRODUCT_BIN_DIR/SNW_MediaProcess 0 /opt/ivr/etc/config/ShConfig.ini  /opt/ivr/etc/config/ShIndex.ini &
+#$PRODUCT_HOME/$PRODUCT_BIN_DIR/SNW_MediaProcess 0 /opt/ivr/etc/config/ShConfig_0.ini  /opt/ivr/etc/config/ShIndex.ini &
+sleep $PROCESS_INIT_DELAY
+sleep $PROCESS_INIT_DELAY
+
+#**************** Launch IVR Synway Voice Process ***************************
+#echo " "
+#echo "------------------------------------------------------------------------"
+#echo "Starting IVR Synway Voice Process - Board 1"
+#echo " "
+#$PRODUCT_HOME/$PRODUCT_BIN_DIR/SNW_MediaProcess 1 /opt/ivr/etc/config/ShConfig_1.ini  /opt/ivr/etc/config/ShIndex.ini &
+#sleep $PROCESS_INIT_DELAY
+
+#**************** Launch IVR Synway Voice Process ***************************
+#echo " "
+#echo "------------------------------------------------------------------------"
+#echo "Starting IVR Synway Voice Process - Board 2"
+#echo " "
+#$PRODUCT_HOME/$PRODUCT_BIN_DIR/SNW_MediaProcess 2 /opt/ivr/etc/config/ShConfig_2.ini  /opt/ivr/etc/config/ShIndex.ini &
+#sleep $PROCESS_INIT_DELAY
+
+#**************** Sending SIGTRACE to IVR Processes *************************
+#sleep $PROCESS_INIT_DELAY
+. $PRODUCT_HOME/etc/scripts/TraceSynway
+
+#*****************************************************************************
+echo " "
+echo "------------------------------------------------------------------------"
+$SETCOLOR_SUCCESS
+echo "------------------- IVR MEDIA STARTUP SEQUENCE COMPLETE ----------------"
+$SETCOLOR_NORMAL
+echo "------------------------------------------------------------------------"
+echo " "
+
+#************************ End Of IvrStart ***********************************

@@ -1,0 +1,17 @@
+
+DO $$
+BEGIN
+   IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'ivr') THEN
+      DROP OWNED BY ivr CASCADE;
+      DROP ROLE ivr ;
+   END IF;
+END
+$$;
+
+DROP DATABASE IF EXISTS ivrdb;
+CREATE DATABASE ivrdb OWNER postgres;
+
+CREATE USER ivr WITH PASSWORD 'ivr';
+
+ALTER DATABASE ivrdb OWNER TO ivr;
+

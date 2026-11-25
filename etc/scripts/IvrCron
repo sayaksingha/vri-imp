@@ -1,0 +1,52 @@
+# @(#) $Id: IvrCron,v 1.1.1.1.2.3.2.4 2017/11/14 02:55:07 mram Exp $
+#!/bin/csh
+#***********************************************************************
+# NAME
+# IvrCron
+#
+# COPYRIGHT
+#    BITL -- Copyright (C) 2011 Tayana Software Solutions Pvt Ltd.,
+#
+# DESCRIPTION
+#
+# Originated : Kothari Komal 
+#***********************************************************************
+
+#***********************************************************************
+#Log Rotate:- run every one hour
+#0 * * * * /usr/sbin/logrotate -s /opt/ivr/tmp/logrotate.status /opt/ivr/etc/config/logrotate.conf >> /opt/ivr/var/log/logrotate.out 2>&1
+
+#***********************************************************************
+#Log Cleaner
+#00 02 * * * sh /opt/ivr/etc/scripts/logcleaner.sh >> /opt/ivr/var/log/logcleaner.log 2>&1
+
+#***********************************************************************
+# Process Monitor startup:- run every 5 minutes
+#*/5 * * * * source /opt/ivr/etc/scripts/ivr.env; source /opt/oam/etc/scripts/oam.env; /opt/oam/bin/OamProcessMonitor >> /opt/ivr/var/log/OamProcessMonitor.out 2>&1
+
+#***********************************************************************
+#Daily Backup:- run everyday at 20 past 00 hours
+#20 00 * * * source /opt/ivr/etc/scripts/ivr.env; sh /opt/ivr/etc/scripts/IvrBackup.sh  >> /opt/ivr/var/log/IvrDailyBackup.out 2>&1
+
+#***********************************************************************
+#Gui procedrues
+#30 * * * *  sh /opt/ivr/etc/scripts/CallProcIvrGui.sh >> /opt/ivr/var/log/procedure.log 2>&1
+
+#***********************************************************************
+#Evr Date MySql Uploader
+#*/15 * * * *  sh /opt/ivr/etc/scripts/EvrDataMySqlLoader.sh >> /opt/ivr/var/log/EvrDataMySqlLoader.log 2>&1
+
+#***********************************************************************
+#Evr Date Sql Uploader
+*/03 * * * *  sh /opt/ivr/etc/scripts/EvrDataSqlLoader.sh >> /opt/ivr/var/log/EvrDataSqlLoader.log 2>&1
+*/02 * * * * sh /opt/ivr/etc/scripts/ClientDataSqlLoader.sh >> /opt/ivr/var/log/ClientDataSqlLoader.log 2>&1
+*/02 * * * * sh /opt/ivr/etc/scripts/CampDataSqlLoader.sh   >> /opt/ivr/var/log/CampDataSqlLoader.log 2>&1
+*/02 * * * * sh /opt/ivr/etc/scripts/ScheduleDataSqlLoader.sh >> /opt/ivr/var/log/ScheduleDataSqlLoader.log 2>&1
+#*/03 * * * * sh  /opt/ivr/etc/scripts/SQLLoader.sh >> /opt/ivr/var/log/SQLLoader.log 2>&1
+
+#*/15 * * * * sh /opt/ivr/etc/scripts/EvrDataVertigaLoader.sh >> /opt/ivr/var/log/EvrDataVertigaLoader.log 2>&1
+#*/15 * * * *  source /opt/ivr/etc/scripts/ivr.env; /opt/vms/bin/VMS_Cleaner 1 >> /opt/ivr/var/log/VmsClearExpired.log 2>&1
+
+#*/15 * * * *  source /opt/ivr/etc/scripts/ivr.env; /opt/vms/bin/VMS_Cleaner 2 >> /opt/ivr/var/log/VmsUnBlockAcc.log 2>&1
+
+#*/30 * * * * sh /opt/ivr/etc/scripts/RemoveExpiredRecordFiles.sh >> /opt/ivr/var/log/RemoveExpiredRecordFiles.log 2>&1

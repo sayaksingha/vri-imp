@@ -1,0 +1,188 @@
+#  @(#) $Id: IvrStart,v 1.1.1.1.2.6.2.3 2016/05/13 02:18:01 mram Exp $
+#!/bin/sh
+
+#*****************************************************************************
+#Set the environment
+#. /opt/ivr/etc/scripts/ivr.env
+#. $PRODUCT_HOME/etc/scripts/oam.env
+. /opt/ivr/etc/scripts/ivr.env
+
+#ulimit -n 16384
+
+#. $PRODUCT_HOME/etc/scripts/trace_enable
+
+#if [ $IVR_MEDIA -eq 0 ] 
+# then
+#    echo " Please Configure ENV properly and Start"
+#    exit
+#fi
+    
+#*****************************************************************************
+# Source function library.
+. $PRODUCT_HOME/etc/scripts/functions
+
+#*****************************************************************************
+echo " "
+echo "------------------------------------------------------------------------"
+$SETCOLOR_SUCCESS
+echo "-------------------------- IVR KERNEL STARTUP -------------------------"
+$SETCOLOR_NORMAL
+echo "------------------------------------------------------------------------"
+echo " "
+
+#*****************************************************************************
+#echo " "
+#echo "------------------------------------------------------------------------"
+#echo "Setting core file limit to 5000"
+#echo " "
+#ulimit -c 5000
+#
+#**************** Launch IVR Peg Handler *************************************
+#echo " "
+#echo "------------------------------------------------------------------------"
+#echo "Starting IVR Peg Handler"
+#echo " "
+#$PRODUCT_HOME/$PRODUCT_BIN_DIR/IVR_PegHandler &
+#sleep $PROCESS_INIT_DELAY
+
+#**************** Launch IVR Peg Writer **************************************
+#echo " "
+#echo "------------------------------------------------------------------------"
+#echo "Starting IVR Peg Writer"
+#echo " "
+#$PRODUCT_HOME/$PRODUCT_BIN_DIR/IVR_PegWriter 1 &
+#sleep $PROCESS_INIT_DELAY
+
+#**************** Launch IVR BillingServer *********************************
+#**************** Launch IVR BillingServer *********************************
+#echo " "
+#echo "------------------------------------------------------------------------"
+#echo "Starting IVR BillingServer"
+#echo " "
+#$PRODUCT_HOME/$PRODUCT_BIN_DIR/IVR_BillingServer 1&
+#sleep $PROCESS_INIT_DELAY
+
+#**************** Launch IVR EvrWritter      ********************************
+echo " "
+echo "------------------------------------------------------------------------"
+echo "Starting IVR Signaling Msg Wrapper"
+echo " "
+$PRODUCT_HOME/$PRODUCT_BIN_DIR/IVR_EvrWriter 1 &
+sleep $PROCESS_INIT_DELAY
+
+#**************** Launch IVR VXML Process ***********************************
+echo " "
+echo "------------------------------------------------------------------------"
+echo "Starting IVR VXML Process"
+echo " "
+$PRODUCT_HOME/$PRODUCT_BIN_DIR/IVR_VxmlProcessor 1 30&
+sleep $PROCESS_INIT_DELAY 
+sleep $PROCESS_INIT_DELAY 
+
+#**************** Launch IVR CCXML Process **********************************
+echo " "
+echo "------------------------------------------------------------------------"
+echo "Starting IVR CCXML Process"
+echo " "
+$PRODUCT_HOME/$PRODUCT_BIN_DIR/IVR_CcxmlProcessor 1 &
+sleep $PROCESS_INIT_DELAY 
+sleep $PROCESS_INIT_DELAY 
+
+#******************** Launch IVR Session Manager ****************************
+echo " "
+echo "------------------------------------------------------------------------"
+echo "Starting IVR Session Manager"
+echo " "
+$PRODUCT_HOME/$PRODUCT_BIN_DIR/IVR_SessionManager 1&
+sleep $PROCESS_INIT_DELAY 
+sleep $PROCESS_INIT_DELAY 
+
+
+#**************** Launch IVR Signaling Msg Wrapper **************************
+echo " "
+echo "------------------------------------------------------------------------"
+echo "Starting IVR Signaling Msg Wrapper"
+echo " "
+$PRODUCT_HOME/$PRODUCT_BIN_DIR/IVR_MsgWrapper 1 &
+sleep $PROCESS_INIT_DELAY
+
+#****************** Launch SIP EvrWriter Process **********************
+echo " "
+echo "---------------------------------------------------------------"
+echo "Starting SIP Handler"
+echo " "
+cd /opt/aculab
+. setV6.sh
+$PRODUCT_HOME/$PRODUCT_BIN_DIR/ACU_SipHandler 1&
+sleep $PROCESS_INIT_DELAY
+
+
+#**************** Launch IVR RPC Request Server *****************************
+
+#if [ $IVR_EXTAPP -eq 1 ]
+# then
+#echo " "
+#echo "------------------------------------------------------------------------"
+#echo "Starting IVR RPC Request Server"
+#echo " "
+#$PRODUCT_HOME/$PRODUCT_BIN_DIR/IVR_RpcReq_Server &
+#sleep $PROCESS_INIT_DELAY
+
+#**************** Launch IVR RPC Response Client ****************************
+#echo " "
+#echo "------------------------------------------------------------------------"
+#echo "Starting IVR RPC Response Client"
+#echo " "
+#$PRODUCT_HOME/$PRODUCT_BIN_DIR/IVR_RpcRsp_Client &
+#sleep $PROCESS_INIT_DELAY
+#fi
+
+#if [ $MMP_ENABLE -eq 1 ]
+# then
+#    source $PRODUCT_HOME/etc/scripts/MmpStart 
+#fi
+#
+#if [ $OBD_ENABLE -eq 1 ]
+# then
+#    source $PRODUCT_HOME/etc/scripts/ObdStart 
+#fi
+#
+#if [ $SAS_ENABLE -eq 1 ]
+# then
+#    source $PRODUCT_HOME/etc/scripts/SasStart
+#fi
+
+#if [ $IVR_MEDIA -eq 1 ]
+#then
+#source $PRODUCT_HOME/etc/scripts/StartSynway
+#fi    
+
+#if [ $IVR_MEDIA -eq 2 ]
+# then
+#    source $PRODUCT_HOME/etc/scripts/StartAculab
+#fi    
+
+#if [ $IVR_MEDIA -eq 3 ]
+# then
+#    source $PRODUCT_HOME/etc/scripts/StartDialogic
+#fi    
+
+#****************** Registering cron jobs for IVR ***************************
+echo " "
+echo "------------------------------------------------------------------------"
+echo "Registering cron jobs for IVR"
+crontab /opt/ivr/etc/scripts/IvrCron
+
+#**************** Sending SIGTRACE to IVR Processes *************************
+sleep $PROCESS_INIT_DELAY
+. $PRODUCT_HOME/etc/scripts/IvrTrace
+
+#*****************************************************************************
+echo " "
+echo "------------------------------------------------------------------------"
+$SETCOLOR_SUCCESS
+echo "----------------- IVR KERNEL STARTUP SEQUENCE COMPLETE ----------------"
+$SETCOLOR_NORMAL
+echo "------------------------------------------------------------------------"
+echo " "
+#************************ End Of IvrStart ***********************************

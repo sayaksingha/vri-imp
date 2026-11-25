@@ -1,0 +1,84 @@
+#  @(#) $Id: trace_disable,v 1.1.1.1.2.3.2.1 2016/04/13 23:42:12 mram Exp $
+#************************* IVR Kernel Trace **************************
+unset TRACE_IVR_VXML
+unset TRACE_IVR_CCXML
+unset TRACE_IVR_PROMPT_LIB
+unset TRACE_IVR_SESSION
+unset TRACE_IVR_WRAPPER
+unset TRACE_IVR_EVR_WRITER
+unset TRACE_SIP_HDLR=1
+
+#unset TRACE_IVR_PEG_HDLR
+#unset TRACE_IVR_PEG_WRITER
+
+#************************* IVR Channel Trace *************************
+#unset TRACE_IVR_CHANNEL_MGR
+#unset TRACE_IVR_CHANNEL_DETAILS
+#unset TRACE_IVR_CHANNEL_STATUS
+
+#unset TRACE_IVR_SCHEDULER
+
+#unset TRACE_ONLINE_CHARGING
+#unset TRACE_BILLING_SERVER
+
+#************************* Media Process Trace **********************
+#if [ $IVR_MEDIA -eq 1 ]
+# then
+#   unset TRACE_SYNWAY_MP_MANAGER
+#fi
+#
+#if [ $IVR_MEDIA -eq 2 ]
+# then
+#   unset TRACE_ACULAB_MP_MGR
+#fi
+#
+#if [ $IVR_MEDIA -eq 3 ]
+# then
+#   if [ $DIALOGIC -eq 1 ]
+#      then
+#         unset TRACE_HMP
+#         unset TRACE_HMP_EVR_WRITER
+#   fi
+#   
+#   if [ $DIALOGIC -eq 2 ]
+#      then
+#         unset TRACE_ISDN_MEDIA_HDLR
+#   fi
+#fi
+#
+##**************************** IVR RPC Trace **************************
+#unset TRACE_RPC_REQ_CLIENT
+#unset TRACE_RPC_REQ_SERVER
+#unset TRACE_RPC_RSP_CLIENT
+#unset TRACE_RPC_RSP_SERVER
+#
+##****************** Util/Coam Traces *********************************
+#unset TRACE_HEALTH_CHECK
+#unset TRACE_QUEUE
+#unset TRACE_SOCKET
+#unset TRACE_SHMEM
+#unset TRACE_CFGREAD
+#unset TRACE_CDR_GEN
+#unset TRACE_OAM
+#unset TRACE_LOG_HANDLER
+#unset TRACE_PROCMON
+#
+#
+#if [ $MMP_ENABLE -eq 1 ]
+# then
+#    source /opt/mmp/etc/scripts/trace_disable 
+#fi
+#
+#if [ $OBD_ENABLE -eq 1 ]
+# then
+#    source /opt/obd/etc/scripts/trace_disable 
+#fi
+#
+#if [ $SAS_ENABLE -eq 1 ]
+# then
+#    source /opt/sas/etc/scripts/trace_disable
+#fi
+#
+##****************** End Of trace_disable ******************************
+#
+

@@ -1,0 +1,14 @@
+#  @(#) $Id: ConfigAculab,v 1.1.4.3 2016/04/12 21:59:12 shijuc Exp $
+#************************* ACU_MediaProcess *************************************
+echo " "
+echo "------------------------------------------------------------------------"
+echo -n "Sending SIGTRACE to ACU_MediaProcess      : "
+killproc ACU_MediaProcess -10
+RETVAL=$?
+echo
+if [ $RETVAL -ne 0 ]
+ then
+     echo "Unable to send SIGTRACE to ACU_MediaProcess"
+fi
+sleep $PROCESS_INIT_DELAY
+#********************************************************************************

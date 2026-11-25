@@ -1,0 +1,68 @@
+#@(#) $Id: IVRVer,v 1.1.1.1.2.5.2.2 2016/07/27 23:17:57 mram Exp $
+#!/bin/sh
+
+################################################
+
+infofile=IVRVer.dat
+
+################################################
+# List of CBSE files
+
+ivrfiles="
+ IVR_SessionManager
+ IVR_VxmlProcessor
+ IVR_CcxmlProcessor
+ IVR_MsgWrapper
+ IVR_ExecuteOperation
+ ACU_SipHandler
+"
+
+################################################
+echo "#############################################################################################"
+echo "#                                     IVR Version Details                                   #"
+echo "#############################################################################################"
+
+for f in $ivrfiles; do
+
+    if [ -f /opt/ivr/bin/$f ]; then
+        # file exists
+        # find md5sum
+        cs1=`md5sum  /opt/ivr/bin/$f | cut -s -d' ' -f1`
+
+        # find match in info file
+        match=`grep -m1 $cs1 $infofile`
+
+        cs2=`echo $match | cut -s -d':' -f4`
+
+
+        if [ $cs2 ] && [ $cs1 == $cs2 ]; then
+            # info available
+            file=`echo $match | cut -s -d':' -f1`
+            version=`echo $match | cut -s -d':' -f2`
+            desc=`echo $match | cut -s -d':' -f3`
+            release=`echo $match | cut -s -d':' -f4`
+            echo -e " $file: $version: $desc: $release "
+        else
+            # info not available
+            echo `basename $f` : UNKNOWN
+            update=1
+        fi
+
+    else
+        # file does not exist
+        echo File \"$f\" not present
+    fi
+
+done
+echo "#############################################################################################"
+
+if [ $update ]; then
+    echo ""
+    echo "All the required information not available"
+    echo "Please update your \"$infofile\" file"
+fi
+
+echo ""
+
+################################################
+

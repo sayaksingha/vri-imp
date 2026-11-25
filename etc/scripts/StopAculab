@@ -1,0 +1,15 @@
+#  @(#) $Id: StopAculab,v 1.1.4.3 2016/04/12 21:59:14 shijuc Exp $
+#************************* ACU_MediaProcess  ********************************
+echo " "
+echo "------------------------------------------------------------------------"
+echo -n "Shutting down ACU_MediaProcess                   : "
+killproc ACU_MediaProcess
+RETVAL=$?
+echo
+if [ $RETVAL -ne 0 ]
+ then
+     echo "Unable to kill ACU_MediaProcess"
+fi
+echo " "
+sleep $PROCESS_INIT_DELAY
+#*****************************************************************************

@@ -1,0 +1,4 @@
+*/1 * * * * sh <PRODUCT_HOME>/etc/scripts/ObdGuiServerApiStateCheck.sh >> <PRODUCT_HOME>/restapi/obdServer/logs/ObdGuiServerApiMonitor.out 2>&1
+
+
+*/10 * * * * /bin/bash -c "source <PRODUCT_HOME>/etc/scripts/CumulationTable.env && <PRODUCT_HOME>/etc/dbscripts/Postgres/CumulationTable.sh 3 4 <OBD_USER> <OBD_PSWD> <OBD_HOST> <OBD_DB> <OBD_SCHEMA>"

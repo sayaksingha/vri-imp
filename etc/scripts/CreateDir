@@ -1,0 +1,91 @@
+#  @(#) $Id: CreateDir,v 1.1.1.1.2.3 2016/04/12 21:59:13 shijuc Exp $
+#! /bin/sh
+#xhost +
+source /opt/ivr/etc/scripts/ivr.env
+#-----------------------------------------------------------------
+echo "Creating Directory structure..."
+
+echo " "
+echo "/opt/ivr/"
+echo "      |--tmp"
+echo "          |--DiskMonitor"
+echo "          |--ProcessLock"
+echo "      |--var"
+echo "          |--oam"
+echo "          |--log"
+echo "          |--mis"
+echo "          |--trace"
+echo "          |--EVRRecord"
+echo "              |--active"
+echo "              |--processing"
+echo "              |--processed"
+echo " "
+
+#-----------------------------------------------------------------
+# Creating Directories...
+
+mkdir $PRODUCT_HOME/tmp
+mkdir $PRODUCT_HOME/tmp/DiskMonitor
+mkdir $PRODUCT_HOME/tmp/ProcessLock
+mkdir $PRODUCT_HOME/var
+mkdir $PRODUCT_HOME/var/oam
+mkdir $PRODUCT_HOME/var/log
+mkdir $PRODUCT_HOME/var/mis
+mkdir $PRODUCT_HOME/var/trace
+mkdir $PRODUCT_HOME/var/EVRRecord
+mkdir $PRODUCT_HOME/var/EVRRecord/active
+mkdir $PRODUCT_HOME/var/EVRRecord/processing
+mkdir $PRODUCT_HOME/var/EVRRecord/processed
+
+
+
+echo " "
+############## IVR ##############
+echo "$IVR_BASE_PATH"
+echo "      |--deployment"
+echo "            |--temp"
+######### APP BUILDER ###########
+echo "      |--development"
+echo "            |--temp"
+# --- GLOBAL RESOURCE PATH
+echo "      |--global"
+echo "            |--scripts"
+echo "            |--lib"
+echo "            |--audio"
+echo "                  |--numbers"
+############## MMP ##############
+echo "      |--content"
+echo "            |--audio"
+echo "            |--preview"
+echo "            |--name"
+echo "      |--temp"
+echo "      |--recordings"
+
+############## IVR ##############
+mkdir $IVR_BASE_PATH
+mkdir $APPLICATION_PATH
+mkdir $APPLICATION_PATH/temp
+######### APP BUILDER ###########
+mkdir $RESOURCE_PATH
+mkdir $RESOURCE_PATH/temp
+# --- GLOBAL RESOURCE PATH
+mkdir $GLOBAL_RESOURCE_PATH
+mkdir $GLOBAL_RESOURCE_PATH/scripts
+mkdir $GLOBAL_RESOURCE_PATH/lib
+mkdir $GLOBAL_RESOURCE_PATH/audio
+mkdir $GLOBAL_RESOURCE_PATH/audio/numbers
+
+############## MMP ##############
+# For Content Module
+mkdir $MMP_CONTENT_PATH
+mkdir $CONTENT_AUDIO_FILE_PATH
+mkdir $CONTENT_PREVIEW_FILE_PATH
+mkdir $CONTENT_NAME_FILE_PATH
+
+mkdir $IVR_BASE_PATH/temp
+mkdir $IVR_BASE_PATH/recordings
+
+echo "Creating Directories Success"
+echo " "
+
+#-----------------------------------------------------------------

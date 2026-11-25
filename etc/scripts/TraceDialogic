@@ -1,0 +1,32 @@
+#  @(#) $Id: TraceDialogic,v 1.1.4.3 2016/04/12 21:59:14 shijuc Exp $
+#************************* DLG_HostMediaProcess *************************************
+if [ $DIALOGIC -eq 1 ]
+then
+   echo " "
+   echo "------------------------------------------------------------------------"
+   echo -n "Sending SIGTRACE to DLG_HostMediaProcess      : "
+   killproc DLG_HostMediaProcess -12
+   RETVAL=$?
+   echo
+   if [ $RETVAL -ne 0 ]
+   then
+   echo "Unable to send SIGTRACE to DLG_HostMediaProcess"
+   fi
+   sleep $PROCESS_INIT_DELAY
+fi   
+
+if [ $DIALOGIC -eq 2 ]
+then
+   echo " "
+   echo "------------------------------------------------------------------------"
+   echo -n "Sending SIGTRACE to DLG_IsdnMediaProcess      : "
+   killproc DLG_IsdnMediaProcess -12
+   RETVAL=$?
+   echo
+   if [ $RETVAL -ne 0 ]
+   then
+   echo "Unable to send SIGTRACE to DLG_IsdnMediaProcess"
+   fi
+   sleep $PROCESS_INIT_DELAY
+fi   
+#*******************************************************************************

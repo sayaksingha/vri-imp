@@ -1,0 +1,13 @@
+#  @(#) $Id: ConfigSynway,v 1.1.4.3 2016/04/12 21:59:13 shijuc Exp $
+#************************* SNW_MediaProcess *************************************
+echo " "
+echo "------------------------------------------------------------------------"
+echo -n "Sending SIGCFG to SNW_MediaProcess      : "
+killproc SNW_MediaProcess -10
+RETVAL=$?
+echo
+if [ $RETVAL -ne 0 ]
+ then
+     echo "Unable to send SIGCFG to SNW_MediaProcess"
+fi
+#*****************************************************************************
